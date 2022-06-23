@@ -303,7 +303,7 @@ public class Drivertools {
 				|| methodName.equals("onboarding_MP") || methodName.equals("zeelogoVerificationInPlayer") 
 				|| methodName.equals("authenticateInprint") || methodName.equals("premiumLiveChannel") 
 				|| methodName.equals("premiumcontentFromInfo") || methodName.equals("rsvodplayback") 
-				|| methodName.equals("loginPerformance") || methodName.equals("cleverTapValidation")) {
+				|| methodName.equals("loginPerformance") || methodName.equals("cleverTapValidation")||methodName.equals("profileselection")) {
 			setPlatfrom("Web");
 		}
 		

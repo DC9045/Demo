@@ -168,7 +168,7 @@ public class ExtentReporter implements ITestListener {
 			test.set(extent.get().createTest(result.getName(),DriverInstance.getENvironment()));
 			totalTests++;
 			ExcelUpdate.passCounter = ExcelUpdate.failCounter = ExcelUpdate.warningCounter = moduleFailCount = 0;
-//			ExcelUpdate.creatExcel();
+			ExcelUpdate.creatExcel();
 			} else {
 				runmode = false;
 				throw new SkipException("");
@@ -255,7 +255,7 @@ public class ExtentReporter implements ITestListener {
 	
 	public void extentLoggerPass(String stepName, String details) {
 		childTest.get().log(Status.PASS, details);
-//		ExcelUpdate.writeData(details, "Pass", "");
+		ExcelUpdate.writeData(details, "Pass", "");
 	}
 
 	public void extentLoggerFail(String stepName, String details) {
@@ -263,7 +263,7 @@ public class ExtentReporter implements ITestListener {
 		screencapture();
 		moduleFailCount = 1;
 		logfail++;
-//		ExcelUpdate.writeData("", "Fail", details);
+		ExcelUpdate.writeData("", "Fail", details);
 	}
 
 	public void extentLoggerWarning(String stepName, String details) {
@@ -280,7 +280,7 @@ public class ExtentReporter implements ITestListener {
 		} else if (getPlatformFromtools().equals("Web")) {
 			extent.get().setSystemInfo("Browser Name ", BrowserType);
 		}
-//		ExcelUpdate.updateResult();
+		ExcelUpdate.updateResult();
 		extent.get().flush();
 //		totalPassedTest = context.getPassedTests().size();
 //		totalFailedTest = context.getFailedTests().size();

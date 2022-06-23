@@ -3,6 +3,7 @@ package com.utility;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.HashSet;
@@ -11,6 +12,7 @@ import java.util.List;
 import java.util.Random;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
+
 import org.openqa.selenium.By;
 import org.openqa.selenium.Dimension;
 import org.openqa.selenium.JavascriptExecutor;
@@ -25,19 +27,18 @@ import org.openqa.selenium.support.ui.Select;
 import org.openqa.selenium.support.ui.WebDriverWait;
 import org.testng.Reporter;
 import org.testng.asserts.SoftAssert;
+
 import com.driverInstance.DriverInstance;
 import com.extent.ExtentReporter;
 import com.google.common.collect.Ordering;
-import com.zee5.ApplicasterPages.AMDGenericObjects;
-import com.zee5.TVPages.Zee5TvHomePage;
-import com.zee5.TVPages.Zee5TvSearchPage;
+
+
 import io.appium.java_client.AppiumDriver;
 import io.appium.java_client.TouchAction;
 import io.appium.java_client.android.AndroidDriver;
 import io.appium.java_client.android.AndroidElement;
-import io.appium.java_client.ios.IOSDriver;
-import java.time.Duration;
 import io.appium.java_client.android.AndroidTouchAction;
+import io.appium.java_client.ios.IOSDriver;
 import io.appium.java_client.touch.LongPressOptions;
 import io.appium.java_client.touch.WaitOptions;
 import io.appium.java_client.touch.offset.ElementOption;
@@ -396,20 +397,20 @@ public class Utilities extends ExtentReporter {
 		return Value;
 	}
 
-	public void hidePwdKeyboard() {
-		try {
-
-			if (getDriver().findElement(AMDGenericObjects.objHideKeyboard).isDisplayed()) {
-				click(AMDGenericObjects.objHideKeyboard, "HideKeyboard");
-			} else {
-				getDriver().hideKeyboard();
-			}
-			logger.info("Hiding keyboard was Successfull");
-			extent.extentLogger("hideKeyboard", "Hiding keyboard was Successfull");
-		} catch (Exception e) {
-			logger.error(e);
-		}
-	}
+//	public void hidePwdKeyboard() {
+//		try {
+//
+//			if (getDriver().findElement(AMDGenericObjects.objHideKeyboard).isDisplayed()) {
+//				click(AMDGenericObjects.objHideKeyboard, "HideKeyboard");
+//			} else {
+//				getDriver().hideKeyboard();
+//			}
+//			logger.info("Hiding keyboard was Successfull");
+//			extent.extentLogger("hideKeyboard", "Hiding keyboard was Successfull");
+//		} catch (Exception e) {
+//			logger.error(e);
+//		}
+//	}
 
 	@SuppressWarnings({ "rawtypes" })
 	public String OTPNotification() {
@@ -2129,27 +2130,27 @@ public class Utilities extends ExtentReporter {
 		}
 	}
 
-	public void  TVTabSelect(String str) throws Exception
-	{
-		
-		TVclick(Zee5TvHomePage.objSelectTab(str), str);
-		Thread.sleep(2000);
-		try{
-			
-			if(TVgetAttributValue("focused", Zee5TvHomePage.objSelectTab(str)).equals("false"))
-			{
-				TVclick(Zee5TvHomePage.objSelectTab(str), str);
-			}
-			else{
-				logger.info("Highlighted Tab:"+TVgetText(Zee5TvHomePage.objHighlightedTab));
-				extent.extentLoggerPass("Tab", "Highlighted Tab:"+TVgetText(Zee5TvHomePage.objHighlightedTab));
-			}
-		}
-		catch(Exception e)
-		{		
-			System.out.println(e);
-		}
-	}
+//	public void  TVTabSelect(String str) throws Exception
+//	{
+//		
+//		TVclick(Zee5TvHomePage.objSelectTab(str), str);
+//		Thread.sleep(2000);
+//		try{
+//			
+//			if(TVgetAttributValue("focused", Zee5TvHomePage.objSelectTab(str)).equals("false"))
+//			{
+//				TVclick(Zee5TvHomePage.objSelectTab(str), str);
+//			}
+//			else{
+//				logger.info("Highlighted Tab:"+TVgetText(Zee5TvHomePage.objHighlightedTab));
+//				extent.extentLoggerPass("Tab", "Highlighted Tab:"+TVgetText(Zee5TvHomePage.objHighlightedTab));
+//			}
+//		}
+//		catch(Exception e)
+//		{		
+//			System.out.println(e);
+//		}
+//	}
 	
 	public String TVgetText(By byLocator) throws Exception {
 		String Value = null;
@@ -2157,17 +2158,21 @@ public class Utilities extends ExtentReporter {
 		return Value;
 	}
 	
-	public void type(String array[]) throws Exception {
-		String searchdata[] = array;
-		int searchdatalength = searchdata.length;
-		StringBuilder searchData = new StringBuilder();
-		for (int j = 0; j < searchdatalength; j++) {
-			getDriver().findElement(Zee5TvSearchPage.objSearchKeyboardBtn(searchdata[j])).click();
-			searchData.append(searchdata[j]);
-		}
-		logger.info("Typing the content : " + searchData);
-		extentLogger("search", "Typing the content : "  +  searchData);
-	}
+//	public void type(String array[]) throws Exception {
+//		String searchdata[] = array;
+//		int searchdatalength = searchdata.length;
+//		StringBuilder searchData = new StringBuilder();
+//		for (int j = 0; j < searchdatalength; j++) {
+//			getDriver().findElement(Zee5TvSearchPage.objSearchKeyboardBtn(searchdata[j])).click();
+//			waitTime(2000);
+//			getDriver().findElement(Zee5TvSearchPage.objSearchKeyboardBtn(searchdata[j])).click();
+//			searchData.append(searchdata[j]);
+//		}
+//		waitTime(2000);
+//		
+//		logger.info("Typing the content : " + searchData);
+//		extentLogger("search", "Typing the content : "  +  searchData);
+//	}
 	public void TVRemoteEvent(int value) throws Exception {
 		
 		String cmd = "adb shell input keyevent "+value+"";
@@ -2201,5 +2206,36 @@ public class Utilities extends ExtentReporter {
 	public void decode() {
 		CTUserName = new String(Base64.getDecoder().decode(getParameterFromXML("CTUser"))); 
 		CTPWD = new String(Base64.getDecoder().decode(getParameterFromXML("CTPwd")));
+	}
+	
+	public boolean TVVerifyElementPresent(By byLocator, int waitTime, String string)
+	{
+		try{
+			WebDriverWait wait = new WebDriverWait(getDriver(), waitTime);
+			wait.until(ExpectedConditions.visibilityOfElementLocated(byLocator));
+			logger.info("Element "+string+" visible");
+			extent.extentLoggerPass("", "Element "+string+" visible");
+			return true;
+		}catch(Exception e)
+		{
+			logger.error("Element "+string+" not visible");
+			return false;
+		}
+	}
+	
+	public boolean waitForElementPresence(By locator, int seconds, String message) throws Exception {
+		try {
+			WebDriverWait w = new WebDriverWait(getWebDriver(), seconds);
+			w.until(ExpectedConditions.visibilityOfElementLocated(locator));
+			logger.info(message + " is displayed");
+			extent.extentLogger("element is displayed", message + " is displayed");
+			return true;
+		} catch (Exception e) {
+			return false;
+		}
+	
+		
+		
+		
 	}
 }

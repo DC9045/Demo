@@ -20,7 +20,6 @@ import org.testng.Reporter;
 import org.testng.SkipException;
 import com.propertyfilereader.PropertyFileReader;
 import com.utility.Utilities;
-import com.zee5.ApplicasterPages.AMDOnboardingScreen;
 import io.appium.java_client.AppiumDriver;
 import io.appium.java_client.android.AndroidDriver;
 import io.appium.java_client.remote.AndroidMobileCapabilityType;
@@ -37,20 +36,19 @@ public class DriverInstance extends Drivertools {
 		super(Application);
 		try {
 			switch (getPlatform()) {
-			case "Android":
-				if (getTestName().equals("Android_ChromeCast")) {
-					chromeCastInitDriver();
-				} else {
-					tlDriver.set((AppiumDriver<WebElement>) new AndroidDriver<WebElement>(new URL(getremoteUrl()),this.generateAndroidCapabilities(Application)));
-					util.waitForElementDisplayed(AMDOnboardingScreen.objWaitForSplashScreenDisapear, 240);
-					Instant endTime = Instant.now();
-					timeElapsed = Duration.between(startTime, endTime);
-					logger.info("Time taken to launch the App (millisec)" + timeElapsed.toMillis());
-				}
+//			case "Android":
+//				if (getTestName().equals("Android_ChromeCast")) {
+//				} else {
+//					tlDriver.set((AppiumDriver<WebElement>) new AndroidDriver<WebElement>(new URL(getremoteUrl()),this.generateAndroidCapabilities(Application)));
+//					util.waitForElementDisplayed(AMDOnboardingScreen.objWaitForSplashScreenDisapear, 240);
+//					Instant endTime = Instant.now();
+//					timeElapsed = Duration.between(startTime, endTime);
+//					logger.info("Time taken to launch the App (millisec)" + timeElapsed.toMillis());
+//				}
 //				extent.extentLogger("Timer","to the App (millisec): " + timeElapsed.toMillis());
 //				File file = new File(dir+apkName);
 //				file.delete();
-				break;
+//				break;
 
 			case "MPWA":
 				tlDriver.set(((AppiumDriver<WebElement>) new AndroidDriver<WebElement>(new URL(getremoteUrl()),
@@ -112,7 +110,7 @@ public class DriverInstance extends Drivertools {
 	@SuppressWarnings("unused")
 	private void installAPK(String build) {
 		if(build.equals("Latest") || build.equals("BuildVersion")) {
-		DownloadApp(build);
+//		DownloadApp(build);
 		System.out.println("Finished download");
 		System.out.println(dir);
 		File file = new File(dir);
@@ -202,29 +200,29 @@ public class DriverInstance extends Drivertools {
 		}
 	}
 	
-	public static void DownloadApp(String build) {
-		DriverInstance.setPlatfrom("Web");
-		File file = new File(System.getProperty("user.dir") + File.separator + "Apk");
-		file.mkdir();
-		WebDriverManager.chromedriver().version(getDriverVersion()).setup();
-	    Map<String, Object> prefs = new HashMap<String, Object>();
-	    prefs.put("download.default_directory",System.getProperty("user.dir") + File.separator + "Apk");
-	    ChromeOptions options = new ChromeOptions();
-	    options.setExperimentalOption("prefs", prefs);
-	    tlWebDriver.set(new ChromeDriver(options));
-	    tlWebDriver.get().get("https://install.appcenter.ms/sign-in?original_url=install:/%2Forgs%2FZee5-Mobile%2Fapps%2FZee5-Android");
-	    Utilities util = new Utilities();
-		util.initDriver();
-		try {
-		DownloadAPPFromAPPCenter DAFAC = new DownloadAPPFromAPPCenter();
-		String buildversion = Reporter.getCurrentTestResult().getTestContext().getCurrentXmlTest().getParameter("BuildVersion");
-		DAFAC.AppCenter(build,buildversion);
-		tlWebDriver.get().quit();
-		DriverInstance.setPlatfrom("Android");
-		}catch(Exception e) {
-			
-		}
-	}
+//	public static void DownloadApp(String build) {
+//		DriverInstance.setPlatfrom("Web");
+//		File file = new File(System.getProperty("user.dir") + File.separator + "Apk");
+//		file.mkdir();
+//		WebDriverManager.chromedriver().version(getDriverVersion()).setup();
+//	    Map<String, Object> prefs = new HashMap<String, Object>();
+//	    prefs.put("download.default_directory",System.getProperty("user.dir") + File.separator + "Apk");
+//	    ChromeOptions options = new ChromeOptions();
+//	    options.setExperimentalOption("prefs", prefs);
+//	    tlWebDriver.set(new ChromeDriver(options));
+//	    tlWebDriver.get().get("https://install.appcenter.ms/sign-in?original_url=install:/%2Forgs%2FZee5-Mobile%2Fapps%2FZee5-Android");
+//	    Utilities util = new Utilities();
+//		util.initDriver();
+//		try {
+//		DownloadAPPFromAPPCenter DAFAC = new DownloadAPPFromAPPCenter();
+//		String buildversion = Reporter.getCurrentTestResult().getTestContext().getCurrentXmlTest().getParameter("BuildVersion");
+//		DAFAC.AppCenter(build,buildversion);
+//		tlWebDriver.get().quit();
+//		DriverInstance.setPlatfrom("Android");
+//		}catch(Exception e) {
+//			
+//		}
+//	}
 	
 	public void chromeCastInitDriver() throws MalformedURLException, ParseException {
 		 tlDriver.set((AppiumDriver<WebElement>) new AndroidDriver<WebElement>(new URL(getremoteUrl()),

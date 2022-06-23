@@ -1,25 +1,28 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<testng-results skipped="0" failed="0" ignored="0" total="1" passed="1">
+<testng-results ignored="0" total="1" passed="1" failed="0" skipped="0">
   <reporter-output>
   </reporter-output>
-  <suite name="Web" duration-ms="27153" started-at="2021-05-27T23:11:17 IST" finished-at="2021-05-27T23:11:44 IST">
+  <suite started-at="2022-06-17T13:07:49 IST" name="TV" finished-at="2022-06-17T13:10:21 IST" duration-ms="152108">
     <groups>
     </groups>
-    <test name="VerifyURL" duration-ms="27153" started-at="2021-05-27T23:11:17 IST" finished-at="2021-05-27T23:11:44 IST">
-      <class name="com.VerifyURL.VerifyURL">
-        <test-method status="PASS" signature="init()[pri:0, instance:com.VerifyURL.VerifyURL@43bd930a]" name="init" is-config="true" duration-ms="11988" started-at="2021-05-27T23:11:17 IST" finished-at="2021-05-27T23:11:29 IST">
+    <test started-at="2022-06-17T13:07:49 IST" name="vootTV" finished-at="2022-06-17T13:10:21 IST" duration-ms="152108">
+      <class name="com.VootTvScripts.TvVootScripts">
+        <test-method is-config="true" signature="Before()[pri:0, instance:com.VootTvScripts.TvVootScripts@665e9289]" started-at="2022-06-17T13:07:59 IST" name="Before" finished-at="2022-06-17T13:08:18 IST" duration-ms="19120" status="PASS">
           <reporter-output>
           </reporter-output>
-        </test-method> <!-- init -->
-        <test-method status="PASS" signature="verifyPageresponse()[pri:0, instance:com.VerifyURL.VerifyURL@43bd930a]" name="verifyPageresponse" duration-ms="14416" started-at="2021-05-27T23:11:29 IST" finished-at="2021-05-27T23:11:43 IST">
+        </test-method> <!-- Before -->
+        <test-method signature="Demo(java.lang.String)[pri:1, instance:com.VootTvScripts.TvVootScripts@665e9289]" started-at="2022-06-17T13:08:18 IST" name="Demo" finished-at="2022-06-17T13:10:19 IST" duration-ms="121408" status="PASS">
+          <params>
+            <param index="0">
+              <value>
+                <![CDATA[Guest]]>
+              </value>
+            </param>
+          </params>
           <reporter-output>
           </reporter-output>
-        </test-method> <!-- verifyPageresponse -->
-        <test-method status="PASS" signature="tearDown()[pri:0, instance:com.VerifyURL.VerifyURL@43bd930a]" name="tearDown" is-config="true" duration-ms="701" started-at="2021-05-27T23:11:43 IST" finished-at="2021-05-27T23:11:44 IST">
-          <reporter-output>
-          </reporter-output>
-        </test-method> <!-- tearDown -->
-      </class> <!-- com.VerifyURL.VerifyURL -->
-    </test> <!-- VerifyURL -->
-  </suite> <!-- Web -->
+        </test-method> <!-- Demo -->
+      </class> <!-- com.VootTvScripts.TvVootScripts -->
+    </test> <!-- vootTV -->
+  </suite> <!-- TV -->
 </testng-results>

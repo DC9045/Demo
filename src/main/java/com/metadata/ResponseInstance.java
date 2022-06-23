@@ -42,7 +42,7 @@ public class ResponseInstance {
 	public static boolean trailer = false;
 	public static String newEmailID = null;
 	public static String newPassword = null;
-	
+	public static String sub = null;
 	public static String AdvertiseId = "7e128be0-8f02-4eb4-93e4-e7382eb01d82";
 	public static String GuestLanguage = "en-kn";
 
@@ -230,7 +230,7 @@ public class ResponseInstance {
 		if (Reporter.getCurrentTestResult().getTestContext().getCurrentXmlTest().getSuite().getName().equals("TV")) {
 			Uri = "https://gwapi.zee5.com/content/reco?country=IN&translation=en&languages=" + contLang
 					+ "&version=10&collection_id=0-8-" + tab + "&region=" + region;
-			
+
 		} else {
 			Uri = "https://gwapi.zee5.com/content/reco?country=IN&translation=en&languages=" + contLang
 					+ "&version=10&collection_id=0-8-" + tab + "&region=" + region;
@@ -2690,12 +2690,25 @@ public class ResponseInstance {
 		Response resp = RestAssured.given().urlEncodingEnabled(false).when()
 				.get("https://gwapi.zee5.com/content/search_all?q=" + searchText
 						+ "&limit=10&asset_type=0,6,1&country=IN&languages=hi,en,mr,te,kn,ta,ml,bn,gu,pa,hr,or&translation=en&version=3&");
+		for (int i = 0; i <= 5; i++) {
+			String title = resp.jsonPath().getString("results[" + i + "].title");
+			if (title.equals("movies")) {
+				for (int j = 0; j <= 5; j++) {
+					String title2 = resp.jsonPath().getString("results[" + i + "].items[" + j + "].title");
+					if (title2.equals("No Entry")) {
+						sub = resp.jsonPath().getString("results[" + i + "].items[" + j + "].subtitle_languages");
 
-		String title = resp.jsonPath().getString("results[0].items[0].title");
-		searchContentID = resp.jsonPath().getString("results[0].items[0].id");
-		assetSubType = resp.jsonPath().getString("results[0].items[0].asset_subtype");
-		getContentDetails(searchContentID);
-		return searchContentID;
+					}
+					break;
+				}
+				break;
+			}
+		}
+		return sub;
+	}
+
+	public static void main(String[] args) {
+		System.out.println(getSearchresponseTv("Noentry"));
 	}
 
 	public static String getRailNameFromPage(String pTabName, String pUserType) {
@@ -2744,7 +2757,7 @@ public class ResponseInstance {
 					assettype = resp.jsonPath().get("buckets[" + i + "].items[0].asset_type").toString();
 				}
 				pTrayName = resp.jsonPath().get("buckets[" + i + "].title").toString();
-				
+
 				if (assettype.equals(setContentType)) {
 					pContentID = resp.jsonPath().get("buckets[" + i + "].items[0].id").toString();
 					contentName = resp.jsonPath().get("buckets[" + i + "].items[0].title").toString();
@@ -2756,15 +2769,15 @@ public class ResponseInstance {
 					break;
 				}
 			}
-			
+
 			Response contentResp = null;
-			int seasonCount= 0;
-			if(assetsubType.equalsIgnoreCase("original")){
+			int seasonCount = 0;
+			if (assetsubType.equalsIgnoreCase("original")) {
 				contentResp = getContentDetails(pContentID, "original");
 				seasonCount = contentResp.jsonPath().getList("seasons").size();
-				System.out.println("seasonCount: "+seasonCount);
+				System.out.println("seasonCount: " + seasonCount);
 			}
-			
+
 			if (pUserType.equalsIgnoreCase("guest") && tabName.equalsIgnoreCase("Web Series") && (seasonCount > 1)) {
 				pContentID = contentResp.jsonPath().get("seasons[0].episodes[0].id");
 			} else if (pUserType.equalsIgnoreCase("guest") && (seasonCount > 1)) {
@@ -2871,7 +2884,6 @@ public class ResponseInstance {
 		return pTrayName;
 	}
 
-
 	public static void setFEPropertyOfContentCardDetails(String pTrayName, String pContentID) {
 
 		// --- Initialized Variables ---
@@ -2891,7 +2903,7 @@ public class ResponseInstance {
 		String pContentSpecification = contentResp.jsonPath().get("asset_subtype");
 		int episode = contentResp.jsonPath().get("episode_number");
 		String pEpisodeNum = Integer.toString(episode);
-		pEpisodeNum = "Episode "+pEpisodeNum;
+		pEpisodeNum = "Episode " + pEpisodeNum;
 		if (pEpisodeNum.equalsIgnoreCase("0")) {
 			pEpisodeNum = "N/A";
 		}
@@ -3016,7 +3028,6 @@ public class ResponseInstance {
 		MixpanelAndroid.FEProp.setProperty("Publishing Date", pPublishedDate);
 		MixpanelAndroid.FEProp.setProperty("Subtitle Language", pSubTitleLangguage);
 	}
-
 
 	public static void setFEPropertyOfLIVETVCardDetails(String pTrayName, String pContentID) {
 
@@ -3664,6 +3675,7 @@ public class ResponseInstance {
 		return respPages;
 	}
 
+	@SuppressWarnings("unused")
 	public static ArrayList<String> getTrayValues(String userType, String tab, int assetType, String assetSubtype,
 			String requiredType, String contentLanguages, int scenario) {
 		ArrayList<String> trayDetails = new ArrayList<String>();
@@ -3992,15 +4004,15 @@ public class ResponseInstance {
 			String carousalName = pageResp.jsonPath().get("buckets[0].title");
 			MixpanelAndroid.FEProp.setProperty("Carousal Name", carousalName);
 			String businessType = pageResp.jsonPath().get("buckets[0].items[" + i + "].business_type");
-			
-			boolean asset = pageResp.jsonPath().get("buckets[0].items[" + i + "].asset_subtype")!=null;
-			if(asset== false) {
+
+			boolean asset = pageResp.jsonPath().get("buckets[0].items[" + i + "].asset_subtype") != null;
+			if (asset == false) {
 				asset_subtype = "Invalid";
-			}else {
+			} else {
 				asset_subtype = pageResp.jsonPath().get("buckets[0].items[" + i + "].asset_subtype");
 
 			}
-			
+
 			contentName = pageResp.jsonPath().get("buckets[0].items[" + i + "].title");
 			System.out.println("asset_subtype: " + asset_subtype);
 			String contentID1 = null;
@@ -4026,13 +4038,13 @@ public class ResponseInstance {
 				}
 
 			} else if (tabName.equalsIgnoreCase("Music")) {
-					if (asset_subtype.equalsIgnoreCase("video")) {
-						var = asset_subtype;
-					} else {
-						var = "Invalid";
-					}
-				
-			}else {
+				if (asset_subtype.equalsIgnoreCase("video")) {
+					var = asset_subtype;
+				} else {
+					var = "Invalid";
+				}
+
+			} else {
 				var = asset_subtype;
 			}
 
@@ -4181,7 +4193,7 @@ public class ResponseInstance {
 			pAudioLangguage = ContentResp.jsonPath().get("audio_languages[0]");
 		} else {
 			pAudioLangguage = "N/A";
-			pLanguages=pAudioLangguage;
+			pLanguages = pAudioLangguage;
 			System.out.println("Audio Language is Empty");
 		}
 
@@ -4487,7 +4499,8 @@ public class ResponseInstance {
 
 		} else {
 
-		//	AppsFlyer.expectedData.setProperty("Unique ID","Z5X_ca2ef614db067f977ae58776fb46d3b4c4301e2d33e175b5a10ccc7c3dd2d393");
+			// AppsFlyer.expectedData.setProperty("Unique
+			// ID","Z5X_ca2ef614db067f977ae58776fb46d3b4c4301e2d33e175b5a10ccc7c3dd2d393");
 		}
 		return pro;
 
@@ -4550,7 +4563,7 @@ public class ResponseInstance {
 			String prentControl = "N/A";
 			try {
 
-				System.out.println("Parent : "+resp.jsonPath().getString("[17].value"));
+				System.out.println("Parent : " + resp.jsonPath().getString("[17].value"));
 				if (!resp.jsonPath().getString("[17].value").equals("{}")) {
 					prentControl = resp.jsonPath().getString("[17].value").split(",")[0].replace("pin", "")
 							.split(":")[1].replace("\"", "");
@@ -5121,112 +5134,116 @@ public class ResponseInstance {
 		MixpanelAndroid.FEProp.setProperty("Unique ID", resp.jsonPath().getString("[0].user_id"));
 	}
 
-	
 //	-------------------CLEVERTAP---------------
 	public static Properties getUserSettingsDetailsforCleverTap(String userType) {
-			System.out.println("- - - - getUserSettingsDetailsforCleverTap - - - -");
-			Properties pro = new Properties();
+		System.out.println("- - - - getUserSettingsDetailsforCleverTap - - - -");
+		Properties pro = new Properties();
 
-			if (!userType.equals("Guest")) {
-				String pUsername = null;
-				String pPassword = null;
-				if (userType.contains("NonSubscribedUser")) {
-					pUsername = Reporter.getCurrentTestResult().getTestContext().getCurrentXmlTest()
-							.getParameter("NonsubscribedUserName");
-					pPassword = Reporter.getCurrentTestResult().getTestContext().getCurrentXmlTest()
-							.getParameter("NonsubscribedPassword");
+		if (!userType.equals("Guest")) {
+			String pUsername = null;
+			String pPassword = null;
+			if (userType.contains("NonSubscribedUser")) {
+				pUsername = Reporter.getCurrentTestResult().getTestContext().getCurrentXmlTest()
+						.getParameter("NonsubscribedUserName");
+				pPassword = Reporter.getCurrentTestResult().getTestContext().getCurrentXmlTest()
+						.getParameter("NonsubscribedPassword");
+			} else {
+				pUsername = Reporter.getCurrentTestResult().getTestContext().getCurrentXmlTest()
+						.getParameter("SubscribedUserName");
+				pPassword = Reporter.getCurrentTestResult().getTestContext().getCurrentXmlTest()
+						.getParameter("SubscribedPassword");
+			}
+
+			String bearerToken = getBearerToken(pUsername, pPassword);
+			resp = RestAssured.given().headers("x-access-token", getXAccessTokenWithApiKey())
+					.header("authorization", bearerToken).when().get("https://userapi.zee5.com/v1/settings");
+			resp.print();
+			for (int i = 0; i < 19; i++) {
+				pro.setProperty(resp.jsonPath().getString("[" + i + "].key"),
+						resp.jsonPath().getString("[" + i + "].value"));
+			}
+			AppsFlyer.expectedData.setProperty("New Download Over Wifi Setting", pro.getProperty("stream_over_wifi"));
+			AppsFlyer.expectedData.setProperty("New Download Quality Setting", pro.getProperty("download_quality"));
+			AppsFlyer.expectedData.setProperty("New Content Language", pro.getProperty("content_language"));
+			AppsFlyer.expectedData.setProperty("New Stream Over Wifi Setting", pro.getProperty("stream_over_wifi"));
+			AppsFlyer.expectedData.setProperty("New Video Streaming Quality Setting",
+					pro.getProperty("streaming_quality"));
+			AppsFlyer.expectedData.setProperty("New App Language", pro.getProperty("display_language"));
+			AppsFlyer.expectedData.setProperty("New Autoplay Setting", pro.getProperty("auto_play"));
+			String prentControl = "N/A";
+			try {
+				System.out.println("Parent : " + pro.getProperty("parental_control"));
+				if (!pro.getProperty("parental_control").equals("{}")) {
+					prentControl = resp.jsonPath().getString("[17].value").split(",")[0].replace("pin", "")
+							.split(":")[1].replace("\"", "");
+					AppsFlyer.expectedData.setProperty("Parent Control Setting", prentControl);
 				} else {
-					pUsername = Reporter.getCurrentTestResult().getTestContext().getCurrentXmlTest()
-							.getParameter("SubscribedUserName");
-					pPassword = Reporter.getCurrentTestResult().getTestContext().getCurrentXmlTest()
-							.getParameter("SubscribedPassword");
-				}
-
-				String bearerToken = getBearerToken(pUsername, pPassword);
-				resp = RestAssured.given().headers("x-access-token", getXAccessTokenWithApiKey())
-						.header("authorization", bearerToken).when().get("https://userapi.zee5.com/v1/settings");
-				resp.print();
-				for (int i = 0; i < 19; i++) {
-					pro.setProperty(resp.jsonPath().getString("["+i+"].key"), resp.jsonPath().getString("["+i+"].value"));
-				}
-				AppsFlyer.expectedData.setProperty("New Download Over Wifi Setting",pro.getProperty("stream_over_wifi"));
-				AppsFlyer.expectedData.setProperty("New Download Quality Setting", pro.getProperty("download_quality"));
-				AppsFlyer.expectedData.setProperty("New Content Language",pro.getProperty("content_language"));
-				AppsFlyer.expectedData.setProperty("New Stream Over Wifi Setting",pro.getProperty("stream_over_wifi"));
-				AppsFlyer.expectedData.setProperty("New Video Streaming Quality Setting",pro.getProperty("streaming_quality"));
-				AppsFlyer.expectedData.setProperty("New App Language",pro.getProperty("display_language"));
-				AppsFlyer.expectedData.setProperty("New Autoplay Setting", pro.getProperty("auto_play"));
-				String prentControl = "N/A";
-				try {
-					System.out.println("Parent : "+pro.getProperty("parental_control"));
-					if (!pro.getProperty("parental_control").equals("{}")) {
-						prentControl = resp.jsonPath().getString("[17].value").split(",")[0].replace("pin", "")
-								.split(":")[1].replace("\"", "");
-						AppsFlyer.expectedData.setProperty("Parent Control Setting", prentControl);
-					}else {
-						AppsFlyer.expectedData.setProperty("Parent Control Setting", prentControl);
-					}
-				} catch (Exception e) {
 					AppsFlyer.expectedData.setProperty("Parent Control Setting", prentControl);
 				}
-				AppsFlyer.expectedData.forEach((key, value) -> System.out.println(key + " : " + value));
+			} catch (Exception e) {
+				AppsFlyer.expectedData.setProperty("Parent Control Setting", prentControl);
 			}
-			return pro;
+			AppsFlyer.expectedData.forEach((key, value) -> System.out.println(key + " : " + value));
 		}
-	
-		public static Properties getUserDataforClevertap(String userType) {
-			System.out.println("- - - - getUserDataforCleverTap - - - -");
-			Properties pro = new Properties();
-			if (!userType.equals("Guest")) {
-				String xAccessToken = getXAccessTokenWithApiKey();
-				String pUsername = null;
-				String pPassword = null;
-				if (userType.contains("NonSubscribedUser")) {
-					pUsername = Reporter.getCurrentTestResult().getTestContext().getCurrentXmlTest()
-							.getParameter("NonsubscribedUserName");
-					pPassword = Reporter.getCurrentTestResult().getTestContext().getCurrentXmlTest()
-							.getParameter("NonsubscribedPassword");
-				} else {
-					pUsername = Reporter.getCurrentTestResult().getTestContext().getCurrentXmlTest()
-							.getParameter("SubscribedUserName");
-					pPassword = Reporter.getCurrentTestResult().getTestContext().getCurrentXmlTest()
-							.getParameter("SubscribedPassword");
-				}
-				String bearerToken = getBearerToken(pUsername, pPassword);
-				String url = "https://userapi.zee5.com/v1/user";
-				resp = RestAssured.given().headers("x-access-token", xAccessToken).header("authorization", bearerToken)
-						.when().get(url);
-				System.out.println(resp.print());
-				CleverTapDashboardData.ActualCleverTapData.setProperty("Email", resp.jsonPath().getString("email"));
-				CleverTapDashboardData.ActualCleverTapData.setProperty("Gender", resp.jsonPath().getString("gender"));
-				CleverTapDashboardData.ActualCleverTapData.setProperty("Registering Country",
-						resp.jsonPath().getString("registration_country"));
-				CleverTapDashboardData.ActualCleverTapData.setProperty("Unique ID", resp.jsonPath().getString("id"));
-				CleverTapDashboardData.ActualCleverTapData.setProperty("user_id", resp.jsonPath().getString("id"));
+		return pro;
+	}
 
-				CleverTapDashboardData.ActualCleverTapData.setProperty("IP", resp.jsonPath().getString("ip_address"));
-				CleverTapDashboardData.ActualCleverTapData.setProperty("Partner Name", resp.jsonPath().getString("additional.partner"));
-				getDOBforAppsFlyer();
-				try {
-					CleverTapDashboardData.ActualCleverTapData.setProperty("Phone Number", resp.jsonPath().getString("mobile"));
-				} catch (Exception e) {
-					System.out.println("Phone number not displayed");
-				}
-				CleverTapDashboardData.ActualCleverTapData.setProperty("Name",
-						resp.jsonPath().getString("first_name") + " " + resp.jsonPath().getString("last_name"));
-				try {
-					CleverTapDashboardData.ActualCleverTapData.setProperty("Platform Name",
-							resp.jsonPath().getString("additional.platform"));
-				} catch (Exception e) {
-					System.out.println("platform not displayed");
-				}
-				CleverTapDashboardData.ActualCleverTapData.forEach((key, value) -> System.out.println(key + " : " + value));
+	public static Properties getUserDataforClevertap(String userType) {
+		System.out.println("- - - - getUserDataforCleverTap - - - -");
+		Properties pro = new Properties();
+		if (!userType.equals("Guest")) {
+			String xAccessToken = getXAccessTokenWithApiKey();
+			String pUsername = null;
+			String pPassword = null;
+			if (userType.contains("NonSubscribedUser")) {
+				pUsername = Reporter.getCurrentTestResult().getTestContext().getCurrentXmlTest()
+						.getParameter("NonsubscribedUserName");
+				pPassword = Reporter.getCurrentTestResult().getTestContext().getCurrentXmlTest()
+						.getParameter("NonsubscribedPassword");
 			} else {
-			//	AppsFlyer.expectedData.setProperty("Unique ID","Z5X_ca2ef614db067f977ae58776fb46d3b4c4301e2d33e175b5a10ccc7c3dd2d393");
+				pUsername = Reporter.getCurrentTestResult().getTestContext().getCurrentXmlTest()
+						.getParameter("SubscribedUserName");
+				pPassword = Reporter.getCurrentTestResult().getTestContext().getCurrentXmlTest()
+						.getParameter("SubscribedPassword");
 			}
-			return pro;
+			String bearerToken = getBearerToken(pUsername, pPassword);
+			String url = "https://userapi.zee5.com/v1/user";
+			resp = RestAssured.given().headers("x-access-token", xAccessToken).header("authorization", bearerToken)
+					.when().get(url);
+			System.out.println(resp.print());
+			CleverTapDashboardData.ActualCleverTapData.setProperty("Email", resp.jsonPath().getString("email"));
+			CleverTapDashboardData.ActualCleverTapData.setProperty("Gender", resp.jsonPath().getString("gender"));
+			CleverTapDashboardData.ActualCleverTapData.setProperty("Registering Country",
+					resp.jsonPath().getString("registration_country"));
+			CleverTapDashboardData.ActualCleverTapData.setProperty("Unique ID", resp.jsonPath().getString("id"));
+			CleverTapDashboardData.ActualCleverTapData.setProperty("user_id", resp.jsonPath().getString("id"));
+
+			CleverTapDashboardData.ActualCleverTapData.setProperty("IP", resp.jsonPath().getString("ip_address"));
+			CleverTapDashboardData.ActualCleverTapData.setProperty("Partner Name",
+					resp.jsonPath().getString("additional.partner"));
+			getDOBforAppsFlyer();
+			try {
+				CleverTapDashboardData.ActualCleverTapData.setProperty("Phone Number",
+						resp.jsonPath().getString("mobile"));
+			} catch (Exception e) {
+				System.out.println("Phone number not displayed");
+			}
+			CleverTapDashboardData.ActualCleverTapData.setProperty("Name",
+					resp.jsonPath().getString("first_name") + " " + resp.jsonPath().getString("last_name"));
+			try {
+				CleverTapDashboardData.ActualCleverTapData.setProperty("Platform Name",
+						resp.jsonPath().getString("additional.platform"));
+			} catch (Exception e) {
+				System.out.println("platform not displayed");
+			}
+			CleverTapDashboardData.ActualCleverTapData.forEach((key, value) -> System.out.println(key + " : " + value));
+		} else {
+			// AppsFlyer.expectedData.setProperty("Unique
+			// ID","Z5X_ca2ef614db067f977ae58776fb46d3b4c4301e2d33e175b5a10ccc7c3dd2d393");
 		}
-	
+		return pro;
+	}
+
 	public static void SubcribedDetailsforCleverTap(String userType) throws ParseException {
 		String username = null;
 		String password = null;
@@ -5293,290 +5310,334 @@ public class ResponseInstance {
 		CleverTapDashboardData.ActualCleverTapData.setProperty("Pack Duration", billing_frequency);
 		CleverTapDashboardData.ActualCleverTapData.setProperty("HasRental", HasRental);
 	}
-	
+
 	public static String getFirstRailNameFromPage(String pTabName, String pUserType) {
 
 		String pFirstRail = null;
 		String pContentLang = getContentLanguageForAppMixpanel(pUserType);
-		
+
 		System.out.println("Default Content Languages: " + pContentLang);
-		
-		resp = ResponseInstance.getResponseForAppPages(pTabName, pContentLang, pUserType);	
-		int totalBuckets = resp.jsonPath().getList("buckets").size();	
-		if(totalBuckets!=0) {
+
+		resp = ResponseInstance.getResponseForAppPages(pTabName, pContentLang, pUserType);
+		int totalBuckets = resp.jsonPath().getList("buckets").size();
+		if (totalBuckets != 0) {
 			pFirstRail = resp.jsonPath().get("buckets[1].title").toString();
 		}
 		return pFirstRail;
 	}
-	
+
 	public static Response getUpNextContentResponse(String showID, String episodeID) {
 
 		Response responseRAW = null;
-		String URI = "https://gwapi.zee5.com/content/season/next_previous/"+showID+"?episode_id="+episodeID+"&type=next&limit=25&translation=en&country=IN&page=1";
+		String URI = "https://gwapi.zee5.com/content/season/next_previous/" + showID + "?episode_id=" + episodeID
+				+ "&type=next&limit=25&translation=en&country=IN&page=1";
 		responseRAW = RestAssured.given().headers("X-ACCESS-TOKEN", getXAccessTokenAMD()).when().get(URI);
 		System.out.println("\n" + URI);
 		if (responseRAW.statusCode() != 200) {
 			System.out.println(responseRAW.getStatusLine() + " | Content ID: " + episodeID);
 		}
-		//responseRAW.print();
+		// responseRAW.print();
 		return responseRAW;
 	}
-	
+
 	public static Response getRespofCWTray_Mixpanel(String userType) {
 		Response respCW = null;
 
 		String Uri = "https://gwapi.zee5.com/user/v2/watchhistory?country=IN&translation=en";
 		String xAccessToken = getXAccessTokenWithApiKey();
 		System.out.println(xAccessToken);
-		
+
 		if (userType.equalsIgnoreCase("Guest")) {
 			respCW = RestAssured.given().headers("x-access-token", xAccessToken).when().get(Uri);
 		} else if (userType.equalsIgnoreCase("SubscribedUser")) {
-			String email = Reporter.getCurrentTestResult().getTestContext().getCurrentXmlTest().getParameter("SubscribedUserName");
-			String password = Reporter.getCurrentTestResult().getTestContext().getCurrentXmlTest().getParameter("SubscribedPassword");
+			String email = Reporter.getCurrentTestResult().getTestContext().getCurrentXmlTest()
+					.getParameter("SubscribedUserName");
+			String password = Reporter.getCurrentTestResult().getTestContext().getCurrentXmlTest()
+					.getParameter("SubscribedPassword");
 			String bearerToken = getBearerToken(email, password);
-			respCW = RestAssured.given().headers("x-access-token", xAccessToken).header("authorization", bearerToken).when().get(Uri);
+			respCW = RestAssured.given().headers("x-access-token", xAccessToken).header("authorization", bearerToken)
+					.when().get(Uri);
 		} else if (userType.equalsIgnoreCase("NonSubscribedUser")) {
-			String email = Reporter.getCurrentTestResult().getTestContext().getCurrentXmlTest().getParameter("NonsubscribedUserName");
-			String password = Reporter.getCurrentTestResult().getTestContext().getCurrentXmlTest().getParameter("NonsubscribedPassword");
+			String email = Reporter.getCurrentTestResult().getTestContext().getCurrentXmlTest()
+					.getParameter("NonsubscribedUserName");
+			String password = Reporter.getCurrentTestResult().getTestContext().getCurrentXmlTest()
+					.getParameter("NonsubscribedPassword");
 			String bearerToken = getBearerToken(email, password);
-			respCW = RestAssured.given().headers("x-access-token", xAccessToken).header("authorization", bearerToken).when().get(Uri);
+			respCW = RestAssured.given().headers("x-access-token", xAccessToken).header("authorization", bearerToken)
+					.when().get(Uri);
 		} else {
 			System.out.println("Incorrect user type passed to method");
 		}
 		respCW.print();
 		return respCW;
 	}
-	
-	
+
 //	Mixpanel
-	
-	public static ArrayList<String> getTrayValuesForCarousel (String userType,String tab,int assetType,String assetSubtype, String requiredType,String contentLanguages,int scenario,String guestToken,ArrayList<HashMap<Integer,String>> carouselValuesUI) throws Exception {		
-		ArrayList trayDetails=new ArrayList<>();
-		String businessType="",ageRating="";
-		String trayTitle="",sourceContentTitle="",contentTitle="",contentDataID="",contentID="",itemID="",channel="N/A",epNo="N/A",series="N/A",horizontalIndex="N/A",trayId="",contentSpec="N/A",previewStatus="N/A";
-		String assetSubtypeAPI="",contenturl="",tvShowAssetSubtype="",tvShowID="",tvShowIDToSend="",channelID="",genre="",isEduauraa="",isTvod="",contentBillingType="N/A",url="",seasonID="";
-		int cardNum=0;
-		boolean reqMatched=false,foundContent=false,evaluateTrailer=false,evaluateActualContent=false;
-		
+
+	public static ArrayList<String> getTrayValuesForCarousel(String userType, String tab, int assetType,
+			String assetSubtype, String requiredType, String contentLanguages, int scenario, String guestToken,
+			ArrayList<HashMap<Integer, String>> carouselValuesUI) throws Exception {
+		ArrayList trayDetails = new ArrayList<>();
+		String businessType = "", ageRating = "";
+		String trayTitle = "", sourceContentTitle = "", contentTitle = "", contentDataID = "", contentID = "",
+				itemID = "", channel = "N/A", epNo = "N/A", series = "N/A", horizontalIndex = "N/A", trayId = "",
+				contentSpec = "N/A", previewStatus = "N/A";
+		String assetSubtypeAPI = "", contenturl = "", tvShowAssetSubtype = "", tvShowID = "", tvShowIDToSend = "",
+				channelID = "", genre = "", isEduauraa = "", isTvod = "", contentBillingType = "N/A", url = "",
+				seasonID = "";
+		int cardNum = 0;
+		boolean reqMatched = false, foundContent = false, evaluateTrailer = false, evaluateActualContent = false;
+
 		Response tabResponse = ResponseInstance.getResponseForPages(tab.toLowerCase(), 0, contentLanguages);
-		trayTitle=tabResponse.jsonPath().get("buckets[0].title").toString();
-		System.out.println("tray title:"+trayTitle);
-		trayId=tabResponse.jsonPath().get("buckets[0].id").toString();
-		System.out.println("trayId : "+trayId);
-		for(int i=0;i<carouselValuesUI.size();i++) {
-			
-			sourceContentTitle=tabResponse.jsonPath().get("buckets[0].items["+i+"].title").toString().replace(",", "-");	
-			System.out.println("sourceContentTitle : "+sourceContentTitle);
-			reqMatched=false;
-			HashMap<Integer,String> mapCardUrl=carouselValuesUI.get(i);
-			cardNum=i;
-			System.out.println("cardNum"+cardNum);
-			url=mapCardUrl.get(i);
-			System.out.println("url"+url);
-			String[] splits=url.split("/");
-			contentDataID=splits[splits.length-1];
-			System.out.println("contentDataID"+contentDataID);
-			if(url.contains("movies/details") && (assetSubtype.equals("movie") || assetSubtype.equals("trailer"))) {
+		trayTitle = tabResponse.jsonPath().get("buckets[0].title").toString();
+		System.out.println("tray title:" + trayTitle);
+		trayId = tabResponse.jsonPath().get("buckets[0].id").toString();
+		System.out.println("trayId : " + trayId);
+		for (int i = 0; i < carouselValuesUI.size(); i++) {
+
+			sourceContentTitle = tabResponse.jsonPath().get("buckets[0].items[" + i + "].title").toString().replace(",",
+					"-");
+			System.out.println("sourceContentTitle : " + sourceContentTitle);
+			reqMatched = false;
+			HashMap<Integer, String> mapCardUrl = carouselValuesUI.get(i);
+			cardNum = i;
+			System.out.println("cardNum" + cardNum);
+			url = mapCardUrl.get(i);
+			System.out.println("url" + url);
+			String[] splits = url.split("/");
+			contentDataID = splits[splits.length - 1];
+			System.out.println("contentDataID" + contentDataID);
+			if (url.contains("movies/details") && (assetSubtype.equals("movie") || assetSubtype.equals("trailer"))) {
 				System.out.println("entered P");
-				tvShowID="";	
-				reqMatched=true;
-			}
-			else if(url.contains("tvshows/details") && assetSubtype.equals("episode")) {
+				tvShowID = "";
+				reqMatched = true;
+			} else if (url.contains("tvshows/details") && assetSubtype.equals("episode")) {
 				System.out.println("entered Q");
-				tvShowID=url.split(".com")[1].split("/")[4];
-				if(contentDataID.equals("latest") || contentDataID.equals("latest1")) {
-					contentDataID=tvShowID;
-					tvShowIDToSend=tvShowID;
-					tvShowID="";
+				tvShowID = url.split(".com")[1].split("/")[4];
+				if (contentDataID.equals("latest") || contentDataID.equals("latest1")) {
+					contentDataID = tvShowID;
+					tvShowIDToSend = tvShowID;
+					tvShowID = "";
 				}
-				reqMatched=true;
-			}
-			else if(url.contains("kids-shows") && assetSubtype.equals("episode")) {
+				reqMatched = true;
+			} else if (url.contains("kids-shows") && assetSubtype.equals("episode")) {
 				System.out.println("entered R");
-				tvShowID=url.split(".com")[1].split("/")[4];
-				if(contentDataID.equals("latest") || contentDataID.equals("latest1")) {
-					contentDataID=tvShowID;
-					tvShowIDToSend=tvShowID;
-					tvShowID="";
+				tvShowID = url.split(".com")[1].split("/")[4];
+				if (contentDataID.equals("latest") || contentDataID.equals("latest1")) {
+					contentDataID = tvShowID;
+					tvShowIDToSend = tvShowID;
+					tvShowID = "";
 				}
-				reqMatched=true;
-			}
-			else if(url.contains("music-videos") && assetSubtype.equals("video")) {
+				reqMatched = true;
+			} else if (url.contains("music-videos") && assetSubtype.equals("video")) {
 				System.out.println("entered S");
-				tvShowID="";
-				reqMatched=true;
-			}
-			else if(url.contains("videos/details") && assetSubtype.equals("video")) {
+				tvShowID = "";
+				reqMatched = true;
+			} else if (url.contains("videos/details") && assetSubtype.equals("video")) {
 				System.out.println("entered T");
-				tvShowID="";
-				reqMatched=true;
-			}
-			else if(url.contains("zee5originals/details") && assetSubtype.equals("episode")) {
+				tvShowID = "";
+				reqMatched = true;
+			} else if (url.contains("zee5originals/details") && assetSubtype.equals("episode")) {
 				System.out.println("entered U");
-				tvShowID=url.split(".com")[1].split("/")[4];
-				if(contentDataID.equals("latest") || contentDataID.equals("latest1")) {
-					contentDataID=tvShowID;
-					tvShowIDToSend=tvShowID;
-					tvShowID="";
+				tvShowID = url.split(".com")[1].split("/")[4];
+				if (contentDataID.equals("latest") || contentDataID.equals("latest1")) {
+					contentDataID = tvShowID;
+					tvShowIDToSend = tvShowID;
+					tvShowID = "";
 				}
-				reqMatched=true;
-			}
-			else if(url.contains("channels/details")) {
+				reqMatched = true;
+			} else if (url.contains("channels/details")) {
 				System.out.println("entered V");
-				channelID=contentDataID;
-				reqMatched=true;
+				channelID = contentDataID;
+				reqMatched = true;
 			}
-			System.out.println("tvShowID"+tvShowID);
-			if(reqMatched==true) {
-				horizontalIndex=String.valueOf(i+1);
-				Response singlePlaybackResponse = ResponseInstance.getSinglePlayBackDetails(contentDataID,tvShowID,channelID,guestToken);
-				businessType=singlePlaybackResponse.jsonPath().get("assetDetails.business_type").toString();
-				System.out.println("businesssType"+businessType);
+			System.out.println("tvShowID" + tvShowID);
+			if (reqMatched == true) {
+				horizontalIndex = String.valueOf(i + 1);
+				Response singlePlaybackResponse = ResponseInstance.getSinglePlayBackDetails(contentDataID, tvShowID,
+						channelID, guestToken);
+				businessType = singlePlaybackResponse.jsonPath().get("assetDetails.business_type").toString();
+				System.out.println("businesssType" + businessType);
 				try {
-					ageRating=singlePlaybackResponse.jsonPath().get("assetDetails.age_rating");
+					ageRating = singlePlaybackResponse.jsonPath().get("assetDetails.age_rating");
+				} catch (Exception e) {
+					ageRating = "";
 				}
-				catch(Exception e) {ageRating="";}
-				if(ageRating==null) ageRating="";
-				System.out.println("ageRating"+ageRating);
+				if (ageRating == null)
+					ageRating = "";
+				System.out.println("ageRating" + ageRating);
 				try {
-					seasonID=singlePlaybackResponse.jsonPath().get("assetDetails.season");
-					System.out.println("seasonID"+seasonID);
-				}catch(Exception e) {}
-			    if(requiredType.equals("free")) {
-			    	if(userType.equals("Guest") && !businessType.contains("premium") && !ageRating.equals("A") && !businessType.equals("tvod")) {
-						//fetch if free for guest user
+					seasonID = singlePlaybackResponse.jsonPath().get("assetDetails.season");
+					System.out.println("seasonID" + seasonID);
+				} catch (Exception e) {
+				}
+				if (requiredType.equals("free")) {
+					if (userType.equals("Guest") && !businessType.contains("premium") && !ageRating.equals("A")
+							&& !businessType.equals("tvod")) {
+						// fetch if free for guest user
 						System.out.println("entered c11");
-						evaluateActualContent=true;
+						evaluateActualContent = true;
 					}
-					if(!userType.equals("Guest") && !businessType.contains("premium") && !businessType.equals("tvod")) {
-						//fetch if free for non sub and sub user
+					if (!userType.equals("Guest") && !businessType.contains("premium")
+							&& !businessType.equals("tvod")) {
+						// fetch if free for non sub and sub user
 						System.out.println("entered c22");
-						evaluateActualContent=true;
+						evaluateActualContent = true;
 					}
-			    }
-			    if(requiredType.equals("premium")) {
-			    	if(!userType.equals("SubscribedUser") && (businessType.contains("premium") || businessType.equals("tvod"))) {
-						//fetch if premium for Guest/ Non sub user
+				}
+				if (requiredType.equals("premium")) {
+					if (!userType.equals("SubscribedUser")
+							&& (businessType.contains("premium") || businessType.equals("tvod"))) {
+						// fetch if premium for Guest/ Non sub user
 						System.out.println("entered c33");
-						evaluateTrailer=true;
+						evaluateTrailer = true;
 					}
-			    	if(userType.equals("SubscribedUser") && businessType.equals("tvod")) {
-						//fetch if premium for Sub user
+					if (userType.equals("SubscribedUser") && businessType.equals("tvod")) {
+						// fetch if premium for Sub user
 						System.out.println("entered c44");
-						evaluateTrailer=true;
+						evaluateTrailer = true;
 					}
-					if(userType.equals("SubscribedUser") && businessType.contains("premium")) {
-						//fetch if premium for Sub user
+					if (userType.equals("SubscribedUser") && businessType.contains("premium")) {
+						// fetch if premium for Sub user
 						System.out.println("entered c44");
-						evaluateActualContent=true;
+						evaluateActualContent = true;
 					}
-			    }			
+				}
 				try {
-					if(evaluateActualContent==true) {
+					if (evaluateActualContent == true) {
 						System.out.println("inside playlist actualContent");
 						try {
-							contentID=singlePlaybackResponse.jsonPath().get("assetDetails.id").toString();
-						}catch(Exception e) {}
-						System.out.println("contentID"+contentID);
-						contentTitle=singlePlaybackResponse.jsonPath().get("assetDetails.title").toString().replace(",","-");
-						System.out.println("contentTitle"+contentTitle);
-						assetSubtype=singlePlaybackResponse.jsonPath().get("assetDetails.asset_subtype");										
-						if(assetSubtype!=null) contentSpec=assetSubtype;
-						else assetSubtype="";
-						System.out.println("assetSubtype"+assetSubtype);
-						System.out.println("contentSpec"+contentSpec);
-						genre=singlePlaybackResponse.jsonPath().getList("assetDetails.genres.id").toString().replace(",","-");
-						System.out.println("genre"+genre);
-						try {
-							channel=singlePlaybackResponse.jsonPath().getList("assetDetails.channels.original_title").toString().replace(",","-");
-						}catch(Exception e) {}
-						System.out.println("channel"+channel);
-						try {
-							series=singlePlaybackResponse.jsonPath().get("assetDetails.tvshow_name").toString().replace(",","-");
-						}catch(Exception e) {
-							series=contentTitle;
+							contentID = singlePlaybackResponse.jsonPath().get("assetDetails.id").toString();
+						} catch (Exception e) {
 						}
-						System.out.println("series"+series);
+						System.out.println("contentID" + contentID);
+						contentTitle = singlePlaybackResponse.jsonPath().get("assetDetails.title").toString()
+								.replace(",", "-");
+						System.out.println("contentTitle" + contentTitle);
+						assetSubtype = singlePlaybackResponse.jsonPath().get("assetDetails.asset_subtype");
+						if (assetSubtype != null)
+							contentSpec = assetSubtype;
+						else
+							assetSubtype = "";
+						System.out.println("assetSubtype" + assetSubtype);
+						System.out.println("contentSpec" + contentSpec);
+						genre = singlePlaybackResponse.jsonPath().getList("assetDetails.genres.id").toString()
+								.replace(",", "-");
+						System.out.println("genre" + genre);
 						try {
-							epNo=singlePlaybackResponse.jsonPath().get("assetDetails.orderid").toString();
-						}catch(Exception e) {}
-						System.out.println("epNo"+epNo);
-						if(epNo.equals("0")) epNo="N/A";
-						try {
-							contentBillingType=singlePlaybackResponse.jsonPath().get("assetDetails.billing_type").toString();
-						}catch(Exception e) {contentBillingType="N/A";}
-						if(contentBillingType.equals("")) contentBillingType="N/A";
-						System.out.println("contentBillingType"+contentBillingType);
-						
-						try {
-							tvShowAssetSubtype=singlePlaybackResponse.jsonPath().get("showDetails.asset_subtype").toString();
-						}catch(Exception e) {
-							tvShowAssetSubtype="";
+							channel = singlePlaybackResponse.jsonPath().getList("assetDetails.channels.original_title")
+									.toString().replace(",", "-");
+						} catch (Exception e) {
 						}
-						System.out.println("tvShowAssetSubtype"+tvShowAssetSubtype);					
-						foundContent=true;
+						System.out.println("channel" + channel);
+						try {
+							series = singlePlaybackResponse.jsonPath().get("assetDetails.tvshow_name").toString()
+									.replace(",", "-");
+						} catch (Exception e) {
+							series = contentTitle;
+						}
+						System.out.println("series" + series);
+						try {
+							epNo = singlePlaybackResponse.jsonPath().get("assetDetails.orderid").toString();
+						} catch (Exception e) {
+						}
+						System.out.println("epNo" + epNo);
+						if (epNo.equals("0"))
+							epNo = "N/A";
+						try {
+							contentBillingType = singlePlaybackResponse.jsonPath().get("assetDetails.billing_type")
+									.toString();
+						} catch (Exception e) {
+							contentBillingType = "N/A";
+						}
+						if (contentBillingType.equals(""))
+							contentBillingType = "N/A";
+						System.out.println("contentBillingType" + contentBillingType);
+
+						try {
+							tvShowAssetSubtype = singlePlaybackResponse.jsonPath().get("showDetails.asset_subtype")
+									.toString();
+						} catch (Exception e) {
+							tvShowAssetSubtype = "";
+						}
+						System.out.println("tvShowAssetSubtype" + tvShowAssetSubtype);
+						foundContent = true;
 					}
-					if(evaluateTrailer==true) {
+					if (evaluateTrailer == true) {
 						System.out.println("inside playlist evaluateTrailer");
 						try {
-							contentID=singlePlaybackResponse.jsonPath().get("trailerDetails.id").toString();
-						}catch(Exception e) {}
-						System.out.println("contentID"+contentID);
-						contentTitle=singlePlaybackResponse.jsonPath().get("trailerDetails.title").toString().replace(",","-");
-						System.out.println("contentTitle"+contentTitle);
-						assetSubtype=singlePlaybackResponse.jsonPath().get("trailerDetails.asset_subtype");											
-						if(assetSubtype!=null) contentSpec=assetSubtype;
-						else contentSpec="";
-						System.out.println("assetSubtype"+assetSubtype);
-						System.out.println("contentSpec"+contentSpec);
-						genre=singlePlaybackResponse.jsonPath().getList("trailerDetails.genres.id").toString().replace(",","-");
-						System.out.println("genre"+genre);
-						try {
-							channel=singlePlaybackResponse.jsonPath().getList("trailerDetails.channels.original_title").toString().replace(",","-");
-						}catch(Exception e) {}
-						System.out.println("channel"+channel);
-						try {
-							series=singlePlaybackResponse.jsonPath().get("trailerDetails.tvshow_name").toString().replace(",","-");
-						}catch(Exception e) {
-							series=contentTitle;
+							contentID = singlePlaybackResponse.jsonPath().get("trailerDetails.id").toString();
+						} catch (Exception e) {
 						}
-						System.out.println("series"+series);
+						System.out.println("contentID" + contentID);
+						contentTitle = singlePlaybackResponse.jsonPath().get("trailerDetails.title").toString()
+								.replace(",", "-");
+						System.out.println("contentTitle" + contentTitle);
+						assetSubtype = singlePlaybackResponse.jsonPath().get("trailerDetails.asset_subtype");
+						if (assetSubtype != null)
+							contentSpec = assetSubtype;
+						else
+							contentSpec = "";
+						System.out.println("assetSubtype" + assetSubtype);
+						System.out.println("contentSpec" + contentSpec);
+						genre = singlePlaybackResponse.jsonPath().getList("trailerDetails.genres.id").toString()
+								.replace(",", "-");
+						System.out.println("genre" + genre);
 						try {
-							epNo=singlePlaybackResponse.jsonPath().get("trailerDetails.orderid").toString();
-						}catch(Exception e) {}
-						System.out.println("epNo"+epNo);
-						if(epNo.equals("0")) epNo="N/A";
-						try {
-							contentBillingType=singlePlaybackResponse.jsonPath().get("trailerDetails.billing_type").toString();
-						}catch(Exception e) {contentBillingType="N/A";}
-						if(contentBillingType.equals("")) contentBillingType="N/A";
-						System.out.println("contentBillingType"+contentBillingType);
-						
-						try {
-							tvShowAssetSubtype=singlePlaybackResponse.jsonPath().get("showDetails.asset_subtype").toString();
-						}catch(Exception e) {
-							tvShowAssetSubtype="";
+							channel = singlePlaybackResponse.jsonPath()
+									.getList("trailerDetails.channels.original_title").toString().replace(",", "-");
+						} catch (Exception e) {
 						}
-						System.out.println("tvShowAssetSubtype"+tvShowAssetSubtype);					
-						foundContent=true;
+						System.out.println("channel" + channel);
+						try {
+							series = singlePlaybackResponse.jsonPath().get("trailerDetails.tvshow_name").toString()
+									.replace(",", "-");
+						} catch (Exception e) {
+							series = contentTitle;
+						}
+						System.out.println("series" + series);
+						try {
+							epNo = singlePlaybackResponse.jsonPath().get("trailerDetails.orderid").toString();
+						} catch (Exception e) {
+						}
+						System.out.println("epNo" + epNo);
+						if (epNo.equals("0"))
+							epNo = "N/A";
+						try {
+							contentBillingType = singlePlaybackResponse.jsonPath().get("trailerDetails.billing_type")
+									.toString();
+						} catch (Exception e) {
+							contentBillingType = "N/A";
+						}
+						if (contentBillingType.equals(""))
+							contentBillingType = "N/A";
+						System.out.println("contentBillingType" + contentBillingType);
+
+						try {
+							tvShowAssetSubtype = singlePlaybackResponse.jsonPath().get("showDetails.asset_subtype")
+									.toString();
+						} catch (Exception e) {
+							tvShowAssetSubtype = "";
+						}
+						System.out.println("tvShowAssetSubtype" + tvShowAssetSubtype);
+						foundContent = true;
 					}
-					if(foundContent==true) break;
+					if (foundContent == true)
+						break;
+				} catch (Exception e) {
 				}
-				catch(Exception e) {}
-			}		
+			}
 		}
-		if(foundContent==true) {
-			String  topCategory=topCategoryForPlayer(assetType,assetSubtype,genre,tvShowAssetSubtype);
+		if (foundContent == true) {
+			String topCategory = topCategoryForPlayer(assetType, assetSubtype, genre, tvShowAssetSubtype);
 			Mixpanel.FEProp.setProperty("Carousal Name", trayTitle.replace(",", "-"));
-			Mixpanel.FEProp.setProperty("Carousal ID", trayId);	
+			Mixpanel.FEProp.setProperty("Carousal ID", trayId);
 			System.out.println("Carousel added");
 			Mixpanel.FEProp.setProperty("Channel Name", channel);
 			Mixpanel.FEProp.setProperty("Series", series);
-			if(assetSubtype.equals("episode")) {
+			if (assetSubtype.equals("episode")) {
 				Mixpanel.FEProp.setProperty("Episode No", epNo);
-			}
-			else {
+			} else {
 				Mixpanel.FEProp.setProperty("Episode No", "N/A");
 			}
 			Mixpanel.FEProp.setProperty("Horizontal Index", horizontalIndex);
@@ -5585,7 +5646,7 @@ public class ResponseInstance {
 			Mixpanel.FEProp.setProperty("Content Billing Type", contentBillingType);
 			System.out.println("completed trays");
 		}
-		trayDetails.add(trayTitle);	
+		trayDetails.add(trayTitle);
 		trayDetails.add(contentTitle);
 		trayDetails.add(contentDataID);
 		trayDetails.add(contentID);
@@ -5596,61 +5657,68 @@ public class ResponseInstance {
 		trayDetails.add(sourceContentTitle);
 		return trayDetails;
 	}
-	
-	
-	public static Response getSinglePlayBackDetails(String contentID,String tvShowID,String channelID,String guestToken) {
+
+	public static Response getSinglePlayBackDetails(String contentID, String tvShowID, String channelID,
+			String guestToken) {
 		try {
-		String userType = "", username = "", password = "", url="";
-		userType = Reporter.getCurrentTestResult().getTestContext().getCurrentXmlTest().getParameter("userType");
-		//String xAccessToken = getXAccessToken();
-		String xAccessToken = getXAccessTokenFromgwapiPlatformToken();
-		System.out.println("xAccessToken"+xAccessToken);
-		System.out.println("guestToken"+guestToken);
-		String authorizationToken="";
-		
-		if (!userType.equalsIgnoreCase("Guest")) {
-			if (userType.equals("NonSubscribedUser")) {
-				username = Reporter.getCurrentTestResult().getTestContext().getCurrentXmlTest().getParameter("NonSubscribedUserName");
-				password = Reporter.getCurrentTestResult().getTestContext().getCurrentXmlTest().getParameter("NonsubscribedPassword");
+			String userType = "", username = "", password = "", url = "";
+			userType = Reporter.getCurrentTestResult().getTestContext().getCurrentXmlTest().getParameter("userType");
+			// String xAccessToken = getXAccessToken();
+			String xAccessToken = getXAccessTokenFromgwapiPlatformToken();
+			System.out.println("xAccessToken" + xAccessToken);
+			System.out.println("guestToken" + guestToken);
+			String authorizationToken = "";
+
+			if (!userType.equalsIgnoreCase("Guest")) {
+				if (userType.equals("NonSubscribedUser")) {
+					username = Reporter.getCurrentTestResult().getTestContext().getCurrentXmlTest()
+							.getParameter("NonSubscribedUserName");
+					password = Reporter.getCurrentTestResult().getTestContext().getCurrentXmlTest()
+							.getParameter("NonsubscribedPassword");
+				}
+				if (userType.equals("SubscribedUser")) {
+					username = Reporter.getCurrentTestResult().getTestContext().getCurrentXmlTest()
+							.getParameter("SubscribedUserName");
+					password = Reporter.getCurrentTestResult().getTestContext().getCurrentXmlTest()
+							.getParameter("SubscribedPassword");
+				}
+				authorizationToken = getAuthorization(username, password);
 			}
-			if (userType.equals("SubscribedUser")) {
-				username = Reporter.getCurrentTestResult().getTestContext().getCurrentXmlTest().getParameter("SubscribedUserName");
-				password = Reporter.getCurrentTestResult().getTestContext().getCurrentXmlTest().getParameter("SubscribedPassword");
-			}
-			authorizationToken=getAuthorization(username, password);
-		}	
-		System.out.println("authorizationToken:"+authorizationToken);
-		RequestSpecification RequestSinglePlayback = RestAssured.given();
-		RequestSinglePlayback.header("Content-Type", "application/json");
-		RequestSinglePlayback.header("accept", "application/json");
-		if(userType.equals("Guest"))		
-		RequestSinglePlayback.body("{\"x-access-token\": \""+xAccessToken+"\",\r\n"
-				+ "\"X-Z5-Guest-Token\": \""+guestToken+"\"}");	
-		else
-		RequestSinglePlayback.body("{\"Authorization\": \""+authorizationToken+"\",\r\n"
-					+ "\"x-access-token\": \""+xAccessToken+"\",\r\n"
-					+ "\"X-Z5-Guest-Token\": \"\"}");
-		
-		RequestSinglePlayback.config(io.restassured.RestAssured.config().encoderConfig(io.restassured.config.EncoderConfig.encoderConfig()
-				.appendDefaultContentCharsetToContentTypeIfUndefined(false)));
-		if(!channelID.equals(""))
-			url="https://spapi.zee5.com/singlePlayback/getDetails?channel_id="+channelID+"&device_id=WebBrowser&check_parental_control=false&platform_name=WebBrowser&country=IN&version=12";
-		else if(!tvShowID.equals(""))
-			url="https://spapi.zee5.com/singlePlayback/getDetails?content_id="+contentID+"&show_id="+tvShowID+"&device_id=WebBrowser&check_parental_control=false&platform_name=WebBrowser&country=IN&version=12";			
-		else
-			url="https://spapi.zee5.com/singlePlayback/getDetails?content_id="+contentID+"&device_id=WebBrowser&check_parental_control=false&platform_name=WebBrowser&country=IN&is_marketing=1&version=12";
-		System.out.println("singlePlayback url:"+url);
-		Response RequestSinglePlaybackResponse = RequestSinglePlayback.post(url);
-		System.out.println(RequestSinglePlaybackResponse.getStatusCode());
-		System.out.println(RequestSinglePlaybackResponse.getBody().asString());
-		return RequestSinglePlaybackResponse;
-		}
-		catch(Exception e) {
+			System.out.println("authorizationToken:" + authorizationToken);
+			RequestSpecification RequestSinglePlayback = RestAssured.given();
+			RequestSinglePlayback.header("Content-Type", "application/json");
+			RequestSinglePlayback.header("accept", "application/json");
+			if (userType.equals("Guest"))
+				RequestSinglePlayback.body("{\"x-access-token\": \"" + xAccessToken + "\",\r\n"
+						+ "\"X-Z5-Guest-Token\": \"" + guestToken + "\"}");
+			else
+				RequestSinglePlayback.body("{\"Authorization\": \"" + authorizationToken + "\",\r\n"
+						+ "\"x-access-token\": \"" + xAccessToken + "\",\r\n" + "\"X-Z5-Guest-Token\": \"\"}");
+
+			RequestSinglePlayback
+					.config(io.restassured.RestAssured.config().encoderConfig(io.restassured.config.EncoderConfig
+							.encoderConfig().appendDefaultContentCharsetToContentTypeIfUndefined(false)));
+			if (!channelID.equals(""))
+				url = "https://spapi.zee5.com/singlePlayback/getDetails?channel_id=" + channelID
+						+ "&device_id=WebBrowser&check_parental_control=false&platform_name=WebBrowser&country=IN&version=12";
+			else if (!tvShowID.equals(""))
+				url = "https://spapi.zee5.com/singlePlayback/getDetails?content_id=" + contentID + "&show_id="
+						+ tvShowID
+						+ "&device_id=WebBrowser&check_parental_control=false&platform_name=WebBrowser&country=IN&version=12";
+			else
+				url = "https://spapi.zee5.com/singlePlayback/getDetails?content_id=" + contentID
+						+ "&device_id=WebBrowser&check_parental_control=false&platform_name=WebBrowser&country=IN&is_marketing=1&version=12";
+			System.out.println("singlePlayback url:" + url);
+			Response RequestSinglePlaybackResponse = RequestSinglePlayback.post(url);
+			System.out.println(RequestSinglePlaybackResponse.getStatusCode());
+			System.out.println(RequestSinglePlaybackResponse.getBody().asString());
+			return RequestSinglePlaybackResponse;
+		} catch (Exception e) {
 			System.out.println(e);
 			return null;
 		}
 	}
-	
+
 	public static String getXAccessTokenFromgwapiPlatformToken() {
 		Response resp = null;
 		String xAccessToken = "";
@@ -5662,467 +5730,591 @@ public class ResponseInstance {
 		xAccessToken = respString.split("\"")[0];
 		return xAccessToken;
 	}
-	
-	
-	public static String topCategoryForPlayer(int assetType,String assetSubtype,String genre,String tvshowAssetType) throws Exception {
-		String topCategory="";
-		if(assetType==0) {
-			if(assetSubtype.equals("movie")) topCategory="Movie";
-			else if(assetSubtype.equals("trailer")) topCategory="Movie";			
-			else if(assetSubtype.equals("video") && genre.contains("News")) topCategory="News";
-			else if(assetSubtype.equals("video") && genre.contains("Music")) topCategory="Music";
-			else topCategory="Video";
+
+	public static String topCategoryForPlayer(int assetType, String assetSubtype, String genre, String tvshowAssetType)
+			throws Exception {
+		String topCategory = "";
+		if (assetType == 0) {
+			if (assetSubtype.equals("movie"))
+				topCategory = "Movie";
+			else if (assetSubtype.equals("trailer"))
+				topCategory = "Movie";
+			else if (assetSubtype.equals("video") && genre.contains("News"))
+				topCategory = "News";
+			else if (assetSubtype.equals("video") && genre.contains("Music"))
+				topCategory = "Music";
+			else
+				topCategory = "Video";
+		} else if (assetType == 1) {
+			if (tvshowAssetType.equals("original"))
+				topCategory = "Original";
+			else
+				topCategory = "Tv Show";
+		} else if (assetType == 6) {
+			topCategory = assetSubtype;
+		} else {
+			topCategory = "N/A";
 		}
-		else if(assetType==1) {
-			if(tvshowAssetType.equals("original")) topCategory="Original";
-			else topCategory="Tv Show";
-		}
-		else if(assetType==6) {
-			topCategory=assetSubtype;
-		}
-		else {
-			topCategory="N/A";
-		}
-		System.out.println("topCategory:"+topCategory);
+		System.out.println("topCategory:" + topCategory);
 		return topCategory;
 	}
-	
-	
-	public static ArrayList<String> getTrayValuesNew (String userType,String tab,int assetType,String assetSubtype, String requiredType,String contentLanguages,int scenario,String guestToken) throws Exception {		
-		ArrayList trayDetails=new ArrayList<>();
-		String trayTitle="",sourceContentTitle="",contentTitle="",contentDataID="",contentID="",itemID="",channel="N/A",epNo="N/A",series="N/A",horizontalIndex="N/A",trayId="",contentSpec="N/A",previewStatus="N/A";
-		String assetSubtypeAPI="",contenturl="",adProvider="",tvShowAssetSubtype="",tvShowID="",tvSeasonID="",channelID="",genre="",isEduauraa="",isTvod="",contentBillingType="N/A";
-		int cardNum=0;
-		boolean foundContent=false,evaluateTrailer=false,evaluateActualContent=false;
-		int startPage=1,endPage=20;
-		if(scenario==4) {startPage=0;endPage=1;}//for carousel one page is sufficient
-		main : for(int i=startPage;i<endPage;i++) {//Considering each tab may have upto 20 pages
-			System.out.println("i"+i);
+
+	@SuppressWarnings("unused")
+	public static ArrayList<String> getTrayValuesNew(String userType, String tab, int assetType, String assetSubtype,
+			String requiredType, String contentLanguages, int scenario, String guestToken) throws Exception {
+		ArrayList trayDetails = new ArrayList<>();
+		String trayTitle = "", sourceContentTitle = "", contentTitle = "", contentDataID = "", contentID = "",
+				itemID = "", channel = "N/A", epNo = "N/A", series = "N/A", horizontalIndex = "N/A", trayId = "",
+				contentSpec = "N/A", previewStatus = "N/A";
+		String assetSubtypeAPI = "", contenturl = "", adProvider = "", tvShowAssetSubtype = "", tvShowID = "",
+				tvSeasonID = "", channelID = "", genre = "", isEduauraa = "", isTvod = "", contentBillingType = "N/A";
+		int cardNum = 0;
+		boolean foundContent = false, evaluateTrailer = false, evaluateActualContent = false;
+		int startPage = 1, endPage = 20;
+		if (scenario == 4) {
+			startPage = 0;
+			endPage = 1;
+		} // for carousel one page is sufficient
+		main: for (int i = startPage; i < endPage; i++) {// Considering each tab may have upto 20 pages
+			System.out.println("i" + i);
 			Response respContent = ResponseInstance.getResponseForPages(tab.toLowerCase(), i, contentLanguages);
-			int bucketsSize=0;
-			try{ bucketsSize=respContent.jsonPath().get("buckets.size()"); }
-			catch(Exception e) {break;}
-			if(bucketsSize==0) break;
+			int bucketsSize = 0;
+			try {
+				bucketsSize = respContent.jsonPath().get("buckets.size()");
+			} catch (Exception e) {
+				break;
+			}
+			if (bucketsSize == 0)
+				break;
 			else {
-				int iter=0,j=0;
-				if(i==1) j=1;//In first page skip carousel
-				else j=0; 
-				if(scenario==4) bucketsSize=1;//for carousel first bucket evaluation is sufficient
-				submain:for(iter=j;iter<bucketsSize;iter++) {//iterate through trays
-					System.out.println("tray iter"+iter);
-					System.out.println("tray title:"+respContent.jsonPath().get("buckets["+iter+"].title").toString());
-					int noOfCardsToEvaluate=5;
-					if(scenario==4) noOfCardsToEvaluate=7;//for carousel 7 cards evaluation is required
-					for(int k=0;k<noOfCardsToEvaluate;k++) {
-						evaluateTrailer=false;
-						evaluateActualContent=false;
-						System.out.println("card iter"+k);//iterate through 4 cards of the tray
-						cardNum=k;
+				int iter = 0, j = 0;
+				if (i == 1)
+					j = 1;// In first page skip carousel
+				else
+					j = 0;
+				if (scenario == 4)
+					bucketsSize = 1;// for carousel first bucket evaluation is sufficient
+				submain: for (iter = j; iter < bucketsSize; iter++) {// iterate through trays
+					System.out.println("tray iter" + iter);
+					System.out.println(
+							"tray title:" + respContent.jsonPath().get("buckets[" + iter + "].title").toString());
+					int noOfCardsToEvaluate = 5;
+					if (scenario == 4)
+						noOfCardsToEvaluate = 7;// for carousel 7 cards evaluation is required
+					for (int k = 0; k < noOfCardsToEvaluate; k++) {
+						evaluateTrailer = false;
+						evaluateActualContent = false;
+						System.out.println("card iter" + k);// iterate through 4 cards of the tray
+						cardNum = k;
 						try {
-							int assetypeAPI=Integer.valueOf(respContent.jsonPath().get("buckets["+iter+"].items["+k+"].asset_type").toString());													
-							if(assetypeAPI==assetType) {
+							int assetypeAPI = Integer.valueOf(respContent.jsonPath()
+									.get("buckets[" + iter + "].items[" + k + "].asset_type").toString());
+							if (assetypeAPI == assetType) {
 								try {
-									assetSubtypeAPI=respContent.jsonPath().get("buckets["+iter+"].items["+k+"].asset_subtype").toString();
-									System.out.println("assetSubtypeAPI"+assetSubtypeAPI);
-								}catch(Exception e) {}
-								String businessType=respContent.jsonPath().get("buckets["+iter+"].items["+k+"].business_type").toString();
-								System.out.println("businesssType"+businessType);
-								String ageRating=respContent.jsonPath().get("buckets["+iter+"].items["+k+"].age_rating").toString();
-								System.out.println("ageRating"+ageRating);
-								String bucketTags=respContent.jsonPath().get("buckets["+iter+"].tags").toString();
-								System.out.println("bucketTags"+bucketTags);
-								if(assetSubtypeAPI.equals(assetSubtype) && !bucketTags.contains("plex_widget") && !bucketTags.contains("Eduauraa")) {
-									trayTitle=respContent.jsonPath().get("buckets["+iter+"].title").toString();
-									System.out.println("trayTitle : "+trayTitle);
-									trayId=respContent.jsonPath().get("buckets["+iter+"].id").toString();
-									System.out.println("trayId : "+trayId);
-									itemID=respContent.jsonPath().get("buckets["+iter+"].items["+k+"].id").toString();
-									System.out.println("itemID : "+itemID);
-									sourceContentTitle=respContent.jsonPath().get("buckets["+iter+"].items["+k+"].title").toString().replace(",", "-");	
-									System.out.println("sourceContentTitle : "+sourceContentTitle);
-									series=sourceContentTitle;
-									System.out.println("series : "+series);
-									contentDataID=respContent.jsonPath().get("buckets["+iter+"].items["+k+"].id").toString();
-									System.out.println("contentDataID : "+contentDataID);	
-									contentBillingType=respContent.jsonPath().get("buckets["+iter+"].items["+k+"].billing_type").toString();
-									if(contentBillingType.equals("")) contentBillingType="N/A";
-									System.out.println("contentBillingType : "+contentBillingType);
+									assetSubtypeAPI = respContent.jsonPath()
+											.get("buckets[" + iter + "].items[" + k + "].asset_subtype").toString();
+									System.out.println("assetSubtypeAPI" + assetSubtypeAPI);
+								} catch (Exception e) {
+								}
+								String businessType = respContent.jsonPath()
+										.get("buckets[" + iter + "].items[" + k + "].business_type").toString();
+								System.out.println("businesssType" + businessType);
+								String ageRating = respContent.jsonPath()
+										.get("buckets[" + iter + "].items[" + k + "].age_rating").toString();
+								System.out.println("ageRating" + ageRating);
+								String bucketTags = respContent.jsonPath().get("buckets[" + iter + "].tags").toString();
+								System.out.println("bucketTags" + bucketTags);
+								if (assetSubtypeAPI.equals(assetSubtype) && !bucketTags.contains("plex_widget")
+										&& !bucketTags.contains("Eduauraa")) {
+									trayTitle = respContent.jsonPath().get("buckets[" + iter + "].title").toString();
+									System.out.println("trayTitle : " + trayTitle);
+									trayId = respContent.jsonPath().get("buckets[" + iter + "].id").toString();
+									System.out.println("trayId : " + trayId);
+									itemID = respContent.jsonPath().get("buckets[" + iter + "].items[" + k + "].id")
+											.toString();
+									System.out.println("itemID : " + itemID);
+									sourceContentTitle = respContent.jsonPath()
+											.get("buckets[" + iter + "].items[" + k + "].title").toString()
+											.replace(",", "-");
+									System.out.println("sourceContentTitle : " + sourceContentTitle);
+									series = sourceContentTitle;
+									System.out.println("series : " + series);
+									contentDataID = respContent.jsonPath()
+											.get("buckets[" + iter + "].items[" + k + "].id").toString();
+									System.out.println("contentDataID : " + contentDataID);
+									contentBillingType = respContent.jsonPath()
+											.get("buckets[" + iter + "].items[" + k + "].billing_type").toString();
+									if (contentBillingType.equals(""))
+										contentBillingType = "N/A";
+									System.out.println("contentBillingType : " + contentBillingType);
 									try {
-										tvShowID=respContent.jsonPath().getString("buckets["+iter+"].items["+k+"].tvshow_details.id").toString();
-									}
-									catch(Exception e) {
+										tvShowID = respContent.jsonPath()
+												.getString("buckets[" + iter + "].items[" + k + "].tvshow_details.id")
+												.toString();
+									} catch (Exception e) {
 										try {
-											tvShowID=respContent.jsonPath().getString("buckets["+iter+"].items["+k+"].tvshow.id").toString();
+											tvShowID = respContent.jsonPath()
+													.getString("buckets[" + iter + "].items[" + k + "].tvshow.id")
+													.toString();
+										} catch (Exception e1) {
+											tvShowID = "";
 										}
-										catch(Exception e1) {
-											tvShowID="";
-										}											
 									}
-									System.out.println("tvShowID : "+tvShowID);
-									if(assetType==9) {
-										channelID=itemID;
-									}	
-									System.out.println("channelID : "+channelID);
-									if(requiredType.equalsIgnoreCase("free") && businessType.equals("free")) {
+									System.out.println("tvShowID : " + tvShowID);
+									if (assetType == 9) {
+										channelID = itemID;
+									}
+									System.out.println("channelID : " + channelID);
+									if (requiredType.equalsIgnoreCase("free") && businessType.equals("free")) {
 										System.out.println("entered 0000");
-										evaluateActualContent=true;
-									}
-									else if(userType.equals("Guest") && requiredType.equalsIgnoreCase("free") && !businessType.equals("premium_downloadable") && !ageRating.equals("A") && !businessType.equals("tvod")) {
+										evaluateActualContent = true;
+									} else if (userType.equals("Guest") && requiredType.equalsIgnoreCase("free")
+											&& !businessType.equals("premium_downloadable") && !ageRating.equals("A")
+											&& !businessType.equals("tvod")) {
 										System.out.println("entered 1111");
-										evaluateActualContent=true;
-									}
-									else if(!userType.equals("Guest") && requiredType.equalsIgnoreCase("free") && !businessType.equals("premium_downloadable") && !businessType.equals("tvod")) {
+										evaluateActualContent = true;
+									} else if (!userType.equals("Guest") && requiredType.equalsIgnoreCase("free")
+											&& !businessType.equals("premium_downloadable")
+											&& !businessType.equals("tvod")) {
 										System.out.println("entered 2222");
-										evaluateActualContent=true;
-									}
-									else if(!userType.equals("SubscribedUser") && requiredType.equalsIgnoreCase("premium") && businessType.equals("premium_downloadable") && !businessType.equals("tvod")) {
+										evaluateActualContent = true;
+									} else if (!userType.equals("SubscribedUser")
+											&& requiredType.equalsIgnoreCase("premium")
+											&& businessType.equals("premium_downloadable")
+											&& !businessType.equals("tvod")) {
 										System.out.println("entered 3333");
-										evaluateTrailer=true;
-									}
-									else if(userType.equals("SubscribedUser") && requiredType.equalsIgnoreCase("premium") && businessType.equals("premium_downloadable") && !businessType.equals("tvod")) {
+										evaluateTrailer = true;
+									} else if (userType.equals("SubscribedUser")
+											&& requiredType.equalsIgnoreCase("premium")
+											&& businessType.equals("premium_downloadable")
+											&& !businessType.equals("tvod")) {
 										System.out.println("entered 4444");
-										evaluateActualContent=true;
+										evaluateActualContent = true;
 									}
-									
-									Response singlePlaybackResponse=ResponseInstance.getSinglePlayBackDetails(contentDataID,tvShowID,channelID,guestToken);
+
+									Response singlePlaybackResponse = ResponseInstance
+											.getSinglePlayBackDetails(contentDataID, tvShowID, channelID, guestToken);
 									try {
-										contenturl=singlePlaybackResponse.jsonPath().get("assetDetails.web_url").toString();
-									}catch(Exception e) {}
-									System.out.println("contenturl"+contenturl);
-									try {
-										adProvider=singlePlaybackResponse.jsonPath().get("adDetails.video_ads[0].type").toString();
-									}catch(Exception e) {}
-									System.out.println("adProvider"+adProvider);
-									try {
-										tvSeasonID=singlePlaybackResponse.jsonPath().get("assetDetails.season").toString();
-									}catch(Exception e) {
-										tvSeasonID="";
+										contenturl = singlePlaybackResponse.jsonPath().get("assetDetails.web_url")
+												.toString();
+									} catch (Exception e) {
 									}
-									System.out.println("tvSeasonID"+tvSeasonID);
+									System.out.println("contenturl" + contenturl);
 									try {
-										if(evaluateActualContent) {
+										adProvider = singlePlaybackResponse.jsonPath()
+												.get("adDetails.video_ads[0].type").toString();
+									} catch (Exception e) {
+									}
+									System.out.println("adProvider" + adProvider);
+									try {
+										tvSeasonID = singlePlaybackResponse.jsonPath().get("assetDetails.season")
+												.toString();
+									} catch (Exception e) {
+										tvSeasonID = "";
+									}
+									System.out.println("tvSeasonID" + tvSeasonID);
+									try {
+										if (evaluateActualContent) {
 											System.out.println("inside actualContent");
 											try {
-												contentID=singlePlaybackResponse.jsonPath().get("assetDetails.id").toString();
-											}catch(Exception e) {break;}
-											System.out.println("contentID"+contentID);
-											contentTitle=singlePlaybackResponse.jsonPath().get("assetDetails.title").toString();
-											System.out.println("contentTitle"+contentTitle);
-											//assetType=Integer.valueOf(singlePlaybackResponse.jsonPath().get("assetDetails.asset_type").toString());
-											//System.out.println("assetType"+assetType);
-											assetSubtype=singlePlaybackResponse.jsonPath().get("assetDetails.asset_subtype");										
-											if(assetSubtype!=null) contentSpec=assetSubtype;
-											else assetSubtype="";
-											System.out.println("assetSubtype"+assetSubtype);
-											genre=singlePlaybackResponse.jsonPath().getList("assetDetails.genres.id").toString().replace(",","-");
-											System.out.println("genre"+genre);
-											try {
-												channel=singlePlaybackResponse.jsonPath().getList("assetDetails.channels.original_title").toString().replace(",","-");
-											}catch(Exception e) {}
-											System.out.println("channel"+channel);
-											try {
-												series=singlePlaybackResponse.jsonPath().get("assetDetails.tvshow_name").toString().replace(",","-");
-											}catch(Exception e) {
-												series=contentTitle.replace(",","-");
+												contentID = singlePlaybackResponse.jsonPath().get("assetDetails.id")
+														.toString();
+											} catch (Exception e) {
+												break;
 											}
-											System.out.println("series"+series);
+											System.out.println("contentID" + contentID);
+											contentTitle = singlePlaybackResponse.jsonPath().get("assetDetails.title")
+													.toString();
+											System.out.println("contentTitle" + contentTitle);
+											// assetType=Integer.valueOf(singlePlaybackResponse.jsonPath().get("assetDetails.asset_type").toString());
+											// System.out.println("assetType"+assetType);
+											assetSubtype = singlePlaybackResponse.jsonPath()
+													.get("assetDetails.asset_subtype");
+											if (assetSubtype != null)
+												contentSpec = assetSubtype;
+											else
+												assetSubtype = "";
+											System.out.println("assetSubtype" + assetSubtype);
+											genre = singlePlaybackResponse.jsonPath().getList("assetDetails.genres.id")
+													.toString().replace(",", "-");
+											System.out.println("genre" + genre);
 											try {
-												epNo=singlePlaybackResponse.jsonPath().get("assetDetails.orderid").toString();
-											}catch(Exception e) {}
-											System.out.println("epNo"+epNo);
-											if(epNo.equals("0")) epNo="N/A";
-											horizontalIndex=String.valueOf(k+1);
-											System.out.println("horizontalIndex"+horizontalIndex);
-											try {
-												tvShowAssetSubtype=singlePlaybackResponse.jsonPath().get("showDetails.asset_subtype").toString();
-											}catch(Exception e) {
-												tvShowAssetSubtype="";
+												channel = singlePlaybackResponse.jsonPath()
+														.getList("assetDetails.channels.original_title").toString()
+														.replace(",", "-");
+											} catch (Exception e) {
 											}
-											System.out.println("tvShowAssetSubtype"+tvShowAssetSubtype);
-											foundContent=true;
-										
+											System.out.println("channel" + channel);
+											try {
+												series = singlePlaybackResponse.jsonPath()
+														.get("assetDetails.tvshow_name").toString().replace(",", "-");
+											} catch (Exception e) {
+												series = contentTitle.replace(",", "-");
+											}
+											System.out.println("series" + series);
+											try {
+												epNo = singlePlaybackResponse.jsonPath().get("assetDetails.orderid")
+														.toString();
+											} catch (Exception e) {
+											}
+											System.out.println("epNo" + epNo);
+											if (epNo.equals("0"))
+												epNo = "N/A";
+											horizontalIndex = String.valueOf(k + 1);
+											System.out.println("horizontalIndex" + horizontalIndex);
+											try {
+												tvShowAssetSubtype = singlePlaybackResponse.jsonPath()
+														.get("showDetails.asset_subtype").toString();
+											} catch (Exception e) {
+												tvShowAssetSubtype = "";
+											}
+											System.out.println("tvShowAssetSubtype" + tvShowAssetSubtype);
+											foundContent = true;
+
 										}
-										if(evaluateTrailer==true) {
+										if (evaluateTrailer == true) {
 											System.out.println("inside evaluateTrailer");
 											try {
-												contentID=singlePlaybackResponse.jsonPath().get("trailerDetails.id").toString();
-											}catch(Exception e) {break;}
-											System.out.println("contentID"+contentID);
-											contentTitle=singlePlaybackResponse.jsonPath().get("trailerDetails.title").toString();
-											System.out.println("contentTitle"+contentTitle);
-											//assetType=Integer.valueOf(singlePlaybackResponse.jsonPath().get("trailerDetails.asset_type").toString());
-											//System.out.println("assetType"+assetType);
-											assetSubtype=singlePlaybackResponse.jsonPath().get("trailerDetails.asset_subtype");											
-											if(assetSubtype!=null) contentSpec=assetSubtype;
-											else assetSubtype="";
-											System.out.println("assetSubtype"+assetSubtype);
-											genre=singlePlaybackResponse.jsonPath().getList("trailerDetails.genres.id").toString().replace(",","-");
-											System.out.println("genre"+genre);
-											try {
-												channel=singlePlaybackResponse.jsonPath().getList("trailerDetails.channels.original_title").toString().replace(",","-");
-											}catch(Exception e) {}
-											System.out.println("channel"+channel);
-											try {
-												series=singlePlaybackResponse.jsonPath().get("trailerDetails.tvshow_name").toString().replace(",","-");
-											}catch(Exception e) {
-												series=contentTitle.replace(",","-");
+												contentID = singlePlaybackResponse.jsonPath().get("trailerDetails.id")
+														.toString();
+											} catch (Exception e) {
+												break;
 											}
-											System.out.println("series"+series);
+											System.out.println("contentID" + contentID);
+											contentTitle = singlePlaybackResponse.jsonPath().get("trailerDetails.title")
+													.toString();
+											System.out.println("contentTitle" + contentTitle);
+											// assetType=Integer.valueOf(singlePlaybackResponse.jsonPath().get("trailerDetails.asset_type").toString());
+											// System.out.println("assetType"+assetType);
+											assetSubtype = singlePlaybackResponse.jsonPath()
+													.get("trailerDetails.asset_subtype");
+											if (assetSubtype != null)
+												contentSpec = assetSubtype;
+											else
+												assetSubtype = "";
+											System.out.println("assetSubtype" + assetSubtype);
+											genre = singlePlaybackResponse.jsonPath()
+													.getList("trailerDetails.genres.id").toString().replace(",", "-");
+											System.out.println("genre" + genre);
 											try {
-												epNo=singlePlaybackResponse.jsonPath().get("trailerDetails.orderid").toString();
-											}catch(Exception e) {}
-											System.out.println("epNo"+epNo);
-											if(epNo.equals("0")) epNo="N/A";
-											horizontalIndex=String.valueOf(k+1);
-											System.out.println("horizontalIndex"+horizontalIndex);	
-											
-											try {
-												tvShowAssetSubtype=singlePlaybackResponse.jsonPath().get("showDetails.asset_subtype").toString();
-											}catch(Exception e) {
-												tvShowAssetSubtype="";
+												channel = singlePlaybackResponse.jsonPath()
+														.getList("trailerDetails.channels.original_title").toString()
+														.replace(",", "-");
+											} catch (Exception e) {
 											}
-											System.out.println("tvShowAssetSubtype"+tvShowAssetSubtype);
-											
-											foundContent=true;
+											System.out.println("channel" + channel);
+											try {
+												series = singlePlaybackResponse.jsonPath()
+														.get("trailerDetails.tvshow_name").toString().replace(",", "-");
+											} catch (Exception e) {
+												series = contentTitle.replace(",", "-");
+											}
+											System.out.println("series" + series);
+											try {
+												epNo = singlePlaybackResponse.jsonPath().get("trailerDetails.orderid")
+														.toString();
+											} catch (Exception e) {
+											}
+											System.out.println("epNo" + epNo);
+											if (epNo.equals("0"))
+												epNo = "N/A";
+											horizontalIndex = String.valueOf(k + 1);
+											System.out.println("horizontalIndex" + horizontalIndex);
+
+											try {
+												tvShowAssetSubtype = singlePlaybackResponse.jsonPath()
+														.get("showDetails.asset_subtype").toString();
+											} catch (Exception e) {
+												tvShowAssetSubtype = "";
+											}
+											System.out.println("tvShowAssetSubtype" + tvShowAssetSubtype);
+
+											foundContent = true;
 										}
+									} catch (Exception e) {
+										System.out.println("error in calculation card " + k);
 									}
-									catch(Exception e) {System.out.println("error in calculation card "+k);}
-									if(foundContent==true) break main;
+									if (foundContent == true)
+										break main;
 								}
 							}
-						}
-						catch(Exception e) {
-							System.out.println("Tab "+tab+", page number : "+i+", bucket : "+iter+", card "+k+" caused exception");
+						} catch (Exception e) {
+							System.out.println("Tab " + tab + ", page number : " + i + ", bucket : " + iter + ", card "
+									+ k + " caused exception");
 						}
 					}
 				}
-			}						
+			}
 		}
-		if(assetType==9) channel=series;
-		String  topCategory=topCategoryForPlayer(assetType,assetSubtype,genre,tvShowAssetSubtype);
-		trayDetails.add(trayTitle);//0			
-		trayDetails.add(contentTitle);//1
-		trayDetails.add(contentDataID);//2
-		trayDetails.add(contentID);//3
-		trayDetails.add(cardNum);//4
-		trayDetails.add(contenturl);//5
-		trayDetails.add(tvShowID);//6
-		trayDetails.add(channelID);//7
-		trayDetails.add(sourceContentTitle);//8
-		trayDetails.add(adProvider);//9
-		trayDetails.add(tvSeasonID);//10
+		if (assetType == 9)
+			channel = series;
+		String topCategory = topCategoryForPlayer(assetType, assetSubtype, genre, tvShowAssetSubtype);
+		trayDetails.add(trayTitle);// 0
+		trayDetails.add(contentTitle);// 1
+		trayDetails.add(contentDataID);// 2
+		trayDetails.add(contentID);// 3
+		trayDetails.add(cardNum);// 4
+		trayDetails.add(contenturl);// 5
+		trayDetails.add(tvShowID);// 6
+		trayDetails.add(channelID);// 7
+		trayDetails.add(sourceContentTitle);// 8
+		trayDetails.add(adProvider);// 9
+		trayDetails.add(tvSeasonID);// 10
 		System.out.println("trayDetails added");
-		if(scenario==6) {
+		if (scenario == 6) {
 			Mixpanel.FEProp.setProperty("Carousal Name", "N/A");
 			Mixpanel.FEProp.setProperty("Carousal ID", contentDataID);
-		}
-		else if(scenario==7 || scenario==9 || scenario==12) {
+		} else if (scenario == 7 || scenario == 9 || scenario == 12) {
 			Mixpanel.FEProp.setProperty("Carousal Name", "N/A");
 			Mixpanel.FEProp.setProperty("Carousal ID", "N/A");
-		}
-		else {
+		} else {
 			Mixpanel.FEProp.setProperty("Carousal Name", trayTitle.replace(",", "-"));
 			Mixpanel.FEProp.setProperty("Carousal ID", trayId);
-		}		
+		}
 		System.out.println("Carousel added");
 		Mixpanel.FEProp.setProperty("Channel Name", channel);
 		Mixpanel.FEProp.setProperty("Series", series);
-		if(assetSubtype.equals("episode")) {
+		if (assetSubtype.equals("episode")) {
 			Mixpanel.FEProp.setProperty("Episode No", epNo);
-		}
-		else {
+		} else {
 			Mixpanel.FEProp.setProperty("Episode No", "N/A");
 		}
 		Mixpanel.FEProp.setProperty("Horizontal Index", horizontalIndex);
 		Mixpanel.FEProp.setProperty("Top Category", topCategory);
-		if(assetType==9) contentSpec="N/A";
+		if (assetType == 9)
+			contentSpec = "N/A";
 		Mixpanel.FEProp.setProperty("Content Specification", contentSpec);
 		Mixpanel.FEProp.setProperty("Content Billing Type", contentBillingType);
 		System.out.println("completed trays");
 		return trayDetails;
 	}
-	
-	
-	public static ArrayList getUpnextWhenNotPlayedFromPlaylist(String userType,String dataContentID,String webUrl,String guestToken) {
+
+	public static ArrayList getUpnextWhenNotPlayedFromPlaylist(String userType, String dataContentID, String webUrl,
+			String guestToken) {
 		System.out.println("Entered getUpnextWhenNotPlayedFromPlaylist");
-		ArrayList<String> upnextDetails=new ArrayList<String>();
+		ArrayList<String> upnextDetails = new ArrayList<String>();
 		Response respp = null;
-		String url = "https://gwapi.zee5.com/content/player/"+dataContentID+"?user_type=guest&limit=25&translation=en&country=IN&languages=en%2Ckn%2Chi";
+		String url = "https://gwapi.zee5.com/content/player/" + dataContentID
+				+ "?user_type=guest&limit=25&translation=en&country=IN&languages=en%2Ckn%2Chi";
 		Response response = RestAssured.given().headers("X-ACCESS-TOKEN", getXAccessToken()).when().get(url);
 		System.out.println(response.getBody());
-		String contentID=response.jsonPath().get("items[0].id");
-		String contentTitle=response.jsonPath().get("items[0].title");	
-		
-		System.out.println("entered setUpnextCard");		
-		String upnextContentID="N/A",upnextDataContentID="N/A",upnextAssetType="N/A",upnextAssetSubtype="N/A",upnextbusinessType="N/A",upnextAgeRating="N/A",upnextplayerHeadPosition="N/A";
-		String upnextSeries="N/A",upnextChannel="N/A",upnextEpNo="N/A",upnextContentSpec="N/A",upnextHorizontalIndex="N/A",upnextImageUrl="N/A";
-		String upnextContenturl="N/A",upnextContentTitle="N/A",upnextTvShowAssetSubtype="N/A",upnextGenre="N/A",upnextSeasonID="N/A",upnextContentBillingType="N/A";
-		String upnexTVShowID="",upnextChannelID="";		
-		int upnextTrailerSize=0,upnextSeasonSize=0,upnextPreviewSize=0,upnextOrderID=0,upnextRelatedSize=0;
-		String upnextCarouselID="N/A",upnextCarouselName="N/A",upnextTalaClickID="N/A",upnextTalaModelName="N/A",upnextTalaOrigin="N/A",upnextIsTala="N/A";
-		upnextDataContentID=dataContentID;
-		if(webUrl.contains("kids-movies")) upnexTVShowID="";
-		if(webUrl.contains("movies/details")) upnexTVShowID="";
-		if(webUrl.contains("tvshows/details")) {
-			upnexTVShowID=webUrl.split(".com")[1].split("/")[4];			
+		String contentID = response.jsonPath().get("items[0].id");
+		String contentTitle = response.jsonPath().get("items[0].title");
+
+		System.out.println("entered setUpnextCard");
+		String upnextContentID = "N/A", upnextDataContentID = "N/A", upnextAssetType = "N/A",
+				upnextAssetSubtype = "N/A", upnextbusinessType = "N/A", upnextAgeRating = "N/A",
+				upnextplayerHeadPosition = "N/A";
+		String upnextSeries = "N/A", upnextChannel = "N/A", upnextEpNo = "N/A", upnextContentSpec = "N/A",
+				upnextHorizontalIndex = "N/A", upnextImageUrl = "N/A";
+		String upnextContenturl = "N/A", upnextContentTitle = "N/A", upnextTvShowAssetSubtype = "N/A",
+				upnextGenre = "N/A", upnextSeasonID = "N/A", upnextContentBillingType = "N/A";
+		String upnexTVShowID = "", upnextChannelID = "";
+		int upnextTrailerSize = 0, upnextSeasonSize = 0, upnextPreviewSize = 0, upnextOrderID = 0,
+				upnextRelatedSize = 0;
+		String upnextCarouselID = "N/A", upnextCarouselName = "N/A", upnextTalaClickID = "N/A",
+				upnextTalaModelName = "N/A", upnextTalaOrigin = "N/A", upnextIsTala = "N/A";
+		upnextDataContentID = dataContentID;
+		if (webUrl.contains("kids-movies"))
+			upnexTVShowID = "";
+		if (webUrl.contains("movies/details"))
+			upnexTVShowID = "";
+		if (webUrl.contains("tvshows/details")) {
+			upnexTVShowID = webUrl.split(".com")[1].split("/")[4];
 		}
-		if(webUrl.contains("kids-shows")) {
-			upnexTVShowID=webUrl.split(".com")[1].split("/")[4];			
+		if (webUrl.contains("kids-shows")) {
+			upnexTVShowID = webUrl.split(".com")[1].split("/")[4];
 		}
-		if(webUrl.contains("music-videos")) upnexTVShowID="";		
-		if(webUrl.contains("zee5originals/details")) {
-			upnexTVShowID=webUrl.split(".com")[1].split("/")[4];			
+		if (webUrl.contains("music-videos"))
+			upnexTVShowID = "";
+		if (webUrl.contains("zee5originals/details")) {
+			upnexTVShowID = webUrl.split(".com")[1].split("/")[4];
 		}
-		if(webUrl.contains("videos/details")) upnexTVShowID="";
-		if(webUrl.contains("channels/details")) upnextChannelID=dataContentID;
-		
-		System.out.println("upnexChannelID:"+upnextChannelID);
-		System.out.println("upnexTVShowID:"+upnexTVShowID);
-		System.out.println("upnextDataContentIdUI:"+dataContentID);
-		Response upnextSinglePlaybackDetails=ResponseInstance.getSinglePlayBackDetails(dataContentID,upnexTVShowID,upnextChannelID,guestToken);
+		if (webUrl.contains("videos/details"))
+			upnexTVShowID = "";
+		if (webUrl.contains("channels/details"))
+			upnextChannelID = dataContentID;
+
+		System.out.println("upnexChannelID:" + upnextChannelID);
+		System.out.println("upnexTVShowID:" + upnexTVShowID);
+		System.out.println("upnextDataContentIdUI:" + dataContentID);
+		Response upnextSinglePlaybackDetails = ResponseInstance.getSinglePlayBackDetails(dataContentID, upnexTVShowID,
+				upnextChannelID, guestToken);
 		try {
-			String businessType=upnextSinglePlaybackDetails.jsonPath().get("assetDetails.business_type").toString();
-			System.out.println("businesssType"+businessType);
-			String ageRating=upnextSinglePlaybackDetails.jsonPath().get("assetDetails.age_rating").toString();
-			System.out.println("ageRating"+ageRating);
-			
+			String businessType = upnextSinglePlaybackDetails.jsonPath().get("assetDetails.business_type").toString();
+			System.out.println("businesssType" + businessType);
+			String ageRating = upnextSinglePlaybackDetails.jsonPath().get("assetDetails.age_rating").toString();
+			System.out.println("ageRating" + ageRating);
+
 			try {
-				upnextSeasonID=upnextSinglePlaybackDetails.jsonPath().get("assetDetails.season").toString();
-				System.out.println("upnextSeasonID"+upnextSeasonID);
-			}catch(Exception e) {}
-			boolean evaluateTrailer=false,evaluateActualContent=false,foundSameDataIDContentID=false,foundDifferentDataIDContentID=false;
-			if(!businessType.equals("premium_downloadable")) {
+				upnextSeasonID = upnextSinglePlaybackDetails.jsonPath().get("assetDetails.season").toString();
+				System.out.println("upnextSeasonID" + upnextSeasonID);
+			} catch (Exception e) {
+			}
+			boolean evaluateTrailer = false, evaluateActualContent = false, foundSameDataIDContentID = false,
+					foundDifferentDataIDContentID = false;
+			if (!businessType.equals("premium_downloadable")) {
 				System.out.println("Upnext is a free content");
-				if(userType.equals("Guest") && ageRating.equals("A")) {
-					System.out.println("Upnext content cannot played for Guest user since it is A content");				
-				}
-				else evaluateActualContent=true;
-			}
-			else {
+				if (userType.equals("Guest") && ageRating.equals("A")) {
+					System.out.println("Upnext content cannot played for Guest user since it is A content");
+				} else
+					evaluateActualContent = true;
+			} else {
 				System.out.println("Upnext is a premium content");
-				if(!userType.equals("SubscribedUser")) {
-					evaluateTrailer=true;
-				}
-				else evaluateActualContent=true;
+				if (!userType.equals("SubscribedUser")) {
+					evaluateTrailer = true;
+				} else
+					evaluateActualContent = true;
 			}
-			if(evaluateActualContent) {
+			if (evaluateActualContent) {
 				System.out.println("inside actualContent");
 				try {
-					upnextContentID=upnextSinglePlaybackDetails.jsonPath().get("assetDetails.id").toString();
-				}catch(Exception e) {upnextDetails.add("");return upnextDetails;}
-				System.out.println("upnextContentID"+upnextContentID);
-				upnextContentTitle=upnextSinglePlaybackDetails.jsonPath().get("assetDetails.title").toString().replace(",","-");
-				System.out.println("upnextContentTitle"+upnextContentTitle);
-				upnextAssetType=upnextSinglePlaybackDetails.jsonPath().get("assetDetails.asset_type").toString();
-				System.out.println("upnextAssetType"+upnextAssetType);
-				upnextAssetSubtype=upnextSinglePlaybackDetails.jsonPath().get("assetDetails.asset_subtype");
-				System.out.println("upnextAssetSubtype"+upnextAssetSubtype);
-				upnextContentSpec=upnextAssetSubtype;
-				upnextGenre=upnextSinglePlaybackDetails.jsonPath().getList("assetDetails.genres.id").toString().replace(",","-");
-				System.out.println("upnextGenre"+upnextGenre);
-				try {
-					upnextChannel=upnextSinglePlaybackDetails.jsonPath().getList("assetDetails.channels.original_title").toString().replace(",","-");
-				}catch(Exception e) {}
-				System.out.println("upnextChannel"+upnextChannel);
-				try {
-					upnextSeries=upnextSinglePlaybackDetails.jsonPath().get("assetDetails.tvshow_name").toString().replace(",","-");
-				}catch(Exception e) {
-					upnextSeries=upnextContentTitle;
+					upnextContentID = upnextSinglePlaybackDetails.jsonPath().get("assetDetails.id").toString();
+				} catch (Exception e) {
+					upnextDetails.add("");
+					return upnextDetails;
 				}
-				System.out.println("upnextSeries"+upnextSeries);
+				System.out.println("upnextContentID" + upnextContentID);
+				upnextContentTitle = upnextSinglePlaybackDetails.jsonPath().get("assetDetails.title").toString()
+						.replace(",", "-");
+				System.out.println("upnextContentTitle" + upnextContentTitle);
+				upnextAssetType = upnextSinglePlaybackDetails.jsonPath().get("assetDetails.asset_type").toString();
+				System.out.println("upnextAssetType" + upnextAssetType);
+				upnextAssetSubtype = upnextSinglePlaybackDetails.jsonPath().get("assetDetails.asset_subtype");
+				System.out.println("upnextAssetSubtype" + upnextAssetSubtype);
+				upnextContentSpec = upnextAssetSubtype;
+				upnextGenre = upnextSinglePlaybackDetails.jsonPath().getList("assetDetails.genres.id").toString()
+						.replace(",", "-");
+				System.out.println("upnextGenre" + upnextGenre);
 				try {
-					upnextEpNo=upnextSinglePlaybackDetails.jsonPath().get("assetDetails.orderid").toString();
-				}catch(Exception e) {}
-				System.out.println("upnextEpNo"+upnextEpNo);
-				if(upnextEpNo.equals("0")) upnextEpNo="N/A";
-				upnextHorizontalIndex="1";//First card is the upnext
-				System.out.println("upnextHorizontalIndex"+upnextHorizontalIndex);
-				try {
-					upnextContentBillingType=upnextSinglePlaybackDetails.jsonPath().get("assetDetails.billing_type").toString();
-				}catch(Exception e) {upnextContentBillingType="N/A";}
-				if(upnextContentBillingType.equals("")) upnextContentBillingType="N/A";
-				System.out.println("upnextContentBillingType"+upnextContentBillingType);
-				
-				try {
-					upnextTvShowAssetSubtype=upnextSinglePlaybackDetails.jsonPath().get("showDetails.asset_subtype").toString();
-				}catch(Exception e) {
-					upnextTvShowAssetSubtype="";
+					upnextChannel = upnextSinglePlaybackDetails.jsonPath()
+							.getList("assetDetails.channels.original_title").toString().replace(",", "-");
+				} catch (Exception e) {
 				}
-				System.out.println("upnextTvShowAssetSubtype"+upnextTvShowAssetSubtype);
+				System.out.println("upnextChannel" + upnextChannel);
+				try {
+					upnextSeries = upnextSinglePlaybackDetails.jsonPath().get("assetDetails.tvshow_name").toString()
+							.replace(",", "-");
+				} catch (Exception e) {
+					upnextSeries = upnextContentTitle;
+				}
+				System.out.println("upnextSeries" + upnextSeries);
+				try {
+					upnextEpNo = upnextSinglePlaybackDetails.jsonPath().get("assetDetails.orderid").toString();
+				} catch (Exception e) {
+				}
+				System.out.println("upnextEpNo" + upnextEpNo);
+				if (upnextEpNo.equals("0"))
+					upnextEpNo = "N/A";
+				upnextHorizontalIndex = "1";// First card is the upnext
+				System.out.println("upnextHorizontalIndex" + upnextHorizontalIndex);
+				try {
+					upnextContentBillingType = upnextSinglePlaybackDetails.jsonPath().get("assetDetails.billing_type")
+							.toString();
+				} catch (Exception e) {
+					upnextContentBillingType = "N/A";
+				}
+				if (upnextContentBillingType.equals(""))
+					upnextContentBillingType = "N/A";
+				System.out.println("upnextContentBillingType" + upnextContentBillingType);
+
+				try {
+					upnextTvShowAssetSubtype = upnextSinglePlaybackDetails.jsonPath().get("showDetails.asset_subtype")
+							.toString();
+				} catch (Exception e) {
+					upnextTvShowAssetSubtype = "";
+				}
+				System.out.println("upnextTvShowAssetSubtype" + upnextTvShowAssetSubtype);
 			}
-			if(evaluateTrailer==true) {
+			if (evaluateTrailer == true) {
 				System.out.println("inside evaluateTrailer");
 				try {
-					upnextContentID=upnextSinglePlaybackDetails.jsonPath().get("trailerDetails.id").toString();
-				}catch(Exception e) {upnextDetails.add("");return upnextDetails;}
-				System.out.println("upnextContentID"+upnextContentID);
-				upnextContentTitle=upnextSinglePlaybackDetails.jsonPath().get("trailerDetails.title").toString();
-				System.out.println("upnextContentTitle"+upnextContentTitle);
-				upnextAssetType=upnextSinglePlaybackDetails.jsonPath().get("trailerDetails.asset_type").toString();
-				System.out.println("upnextAssetType"+upnextAssetType);
-				upnextAssetSubtype=upnextSinglePlaybackDetails.jsonPath().get("trailerDetails.asset_subtype");
-				System.out.println("upnextAssetSubtype"+upnextAssetSubtype);
-				upnextContentSpec=upnextAssetSubtype;
-				upnextGenre=upnextSinglePlaybackDetails.jsonPath().getList("trailerDetails.genres.id").toString().replace(",","-");
-				System.out.println("upnextGenre"+upnextGenre);
-				try {
-					upnextChannel=upnextSinglePlaybackDetails.jsonPath().getList("trailerDetails.channels.original_title").toString().replace(",","-");
-				}catch(Exception e) {}
-				System.out.println("upnextChannel"+upnextChannel);
-				try {
-					upnextSeries=upnextSinglePlaybackDetails.jsonPath().get("trailerDetails.tvshow_name").toString().replace(",","-");
-				}catch(Exception e) {
-					upnextSeries=upnextContentTitle;
+					upnextContentID = upnextSinglePlaybackDetails.jsonPath().get("trailerDetails.id").toString();
+				} catch (Exception e) {
+					upnextDetails.add("");
+					return upnextDetails;
 				}
-				System.out.println("upnextSeries"+upnextSeries);
+				System.out.println("upnextContentID" + upnextContentID);
+				upnextContentTitle = upnextSinglePlaybackDetails.jsonPath().get("trailerDetails.title").toString();
+				System.out.println("upnextContentTitle" + upnextContentTitle);
+				upnextAssetType = upnextSinglePlaybackDetails.jsonPath().get("trailerDetails.asset_type").toString();
+				System.out.println("upnextAssetType" + upnextAssetType);
+				upnextAssetSubtype = upnextSinglePlaybackDetails.jsonPath().get("trailerDetails.asset_subtype");
+				System.out.println("upnextAssetSubtype" + upnextAssetSubtype);
+				upnextContentSpec = upnextAssetSubtype;
+				upnextGenre = upnextSinglePlaybackDetails.jsonPath().getList("trailerDetails.genres.id").toString()
+						.replace(",", "-");
+				System.out.println("upnextGenre" + upnextGenre);
 				try {
-					upnextEpNo=upnextSinglePlaybackDetails.jsonPath().get("trailerDetails.orderid").toString();
-				}catch(Exception e) {}
-				System.out.println("upnextEpNo"+upnextEpNo);
-				if(upnextEpNo.equals("0")) upnextEpNo="N/A";
-				upnextHorizontalIndex="1";//First card is the upnext
-				System.out.println("upnextHorizontalIndex"+upnextHorizontalIndex);
-				try {
-					upnextContentBillingType=upnextSinglePlaybackDetails.jsonPath().get("trailerDetails.billing_type").toString();
-				}catch(Exception e) {upnextContentBillingType="N/A";}
-				if(upnextContentBillingType.equals("")) upnextContentBillingType="N/A";
-				System.out.println("upnextContentBillingType"+upnextContentBillingType);
-				
-				try {
-					upnextTvShowAssetSubtype=upnextSinglePlaybackDetails.jsonPath().get("showDetails.asset_subtype").toString();
-				}catch(Exception e) {
-					upnextTvShowAssetSubtype="";
+					upnextChannel = upnextSinglePlaybackDetails.jsonPath()
+							.getList("trailerDetails.channels.original_title").toString().replace(",", "-");
+				} catch (Exception e) {
 				}
-				System.out.println("upnextTvShowAssetSubtype"+upnextTvShowAssetSubtype);
-				
-			}			
-			if(evaluateTrailer==true || evaluateActualContent==true) {
+				System.out.println("upnextChannel" + upnextChannel);
+				try {
+					upnextSeries = upnextSinglePlaybackDetails.jsonPath().get("trailerDetails.tvshow_name").toString()
+							.replace(",", "-");
+				} catch (Exception e) {
+					upnextSeries = upnextContentTitle;
+				}
+				System.out.println("upnextSeries" + upnextSeries);
+				try {
+					upnextEpNo = upnextSinglePlaybackDetails.jsonPath().get("trailerDetails.orderid").toString();
+				} catch (Exception e) {
+				}
+				System.out.println("upnextEpNo" + upnextEpNo);
+				if (upnextEpNo.equals("0"))
+					upnextEpNo = "N/A";
+				upnextHorizontalIndex = "1";// First card is the upnext
+				System.out.println("upnextHorizontalIndex" + upnextHorizontalIndex);
+				try {
+					upnextContentBillingType = upnextSinglePlaybackDetails.jsonPath().get("trailerDetails.billing_type")
+							.toString();
+				} catch (Exception e) {
+					upnextContentBillingType = "N/A";
+				}
+				if (upnextContentBillingType.equals(""))
+					upnextContentBillingType = "N/A";
+				System.out.println("upnextContentBillingType" + upnextContentBillingType);
+
+				try {
+					upnextTvShowAssetSubtype = upnextSinglePlaybackDetails.jsonPath().get("showDetails.asset_subtype")
+							.toString();
+				} catch (Exception e) {
+					upnextTvShowAssetSubtype = "";
+				}
+				System.out.println("upnextTvShowAssetSubtype" + upnextTvShowAssetSubtype);
+
+			}
+			if (evaluateTrailer == true || evaluateActualContent == true) {
 				Mixpanel.FEProp.setProperty("Channel Name", upnextChannel);
 				Mixpanel.FEProp.setProperty("Series", upnextSeries);
-				if(upnextAssetSubtype.equals("episode")) {
+				if (upnextAssetSubtype.equals("episode")) {
 					Mixpanel.FEProp.setProperty("Episode No", upnextEpNo);
-				}
-				else {
+				} else {
 					Mixpanel.FEProp.setProperty("Episode No", "N/A");
 				}
 				Mixpanel.FEProp.setProperty("Image URL", upnextImageUrl);
 				Mixpanel.FEProp.setProperty("Content Specification", upnextContentSpec);
 				Mixpanel.FEProp.setProperty("Content Billing Type", upnextContentBillingType);
-				String  topCategory=topCategoryForPlayer(Integer.valueOf(upnextAssetType),upnextAssetSubtype,upnextGenre,upnextTvShowAssetSubtype);
+				String topCategory = topCategoryForPlayer(Integer.valueOf(upnextAssetType), upnextAssetSubtype,
+						upnextGenre, upnextTvShowAssetSubtype);
 				Mixpanel.FEProp.setProperty("Top Category", topCategory);
-				
-				upnextCarouselID="N/A";
-				upnextCarouselName="Up Next (Player)";
-				upnextTalaClickID=upnextTalaModelName=upnextTalaOrigin="N/A";
-				if(!upnextTalaOrigin.equals("N/A")) upnextIsTala="true";
-				else upnextIsTala="false";
+
+				upnextCarouselID = "N/A";
+				upnextCarouselName = "Up Next (Player)";
+				upnextTalaClickID = upnextTalaModelName = upnextTalaOrigin = "N/A";
+				if (!upnextTalaOrigin.equals("N/A"))
+					upnextIsTala = "true";
+				else
+					upnextIsTala = "false";
 				Mixpanel.FEProp.setProperty("Carousal Name", "Up Next (Player)");
 				Mixpanel.FEProp.setProperty("Carousal ID", "N/A");
 				Mixpanel.FEProp.setProperty("Talamoos clickID", upnextTalaClickID);
 				Mixpanel.FEProp.setProperty("Talamoos modelName", upnextTalaModelName);
 				Mixpanel.FEProp.setProperty("Talamoos origin", upnextTalaOrigin);
 				Mixpanel.FEProp.setProperty("isTalamoos", upnextIsTala);
-				Mixpanel.FEProp.setProperty("Horizontal Index", upnextHorizontalIndex);				
+				Mixpanel.FEProp.setProperty("Horizontal Index", upnextHorizontalIndex);
 				upnextDetails.add(upnextContentID);
 				System.out.println(upnextDetails.get(0));
 				upnextDetails.add(upnextContentTitle);
@@ -6131,173 +6323,216 @@ public class ResponseInstance {
 				System.out.println(upnextDetails.get(2));
 				upnextDetails.add(upnextAssetSubtype);
 				System.out.println(upnextDetails.get(3));
-			}
-			else upnextDetails.add("");
+			} else
+				upnextDetails.add("");
+		} catch (Exception e) {
+			upnextDetails.add("");
 		}
-		catch(Exception e) {upnextDetails.add("");}	
 		return upnextDetails;
 	}
-	
-	
-	public static ArrayList<String> setPlayListCard (String userType,String contentIDSourceContent,String playlistDataContentID,int assetType,String contLang,String playListTrayTitle,String guestToken,String tvShowID,String channelID) {
+
+	public static ArrayList<String> setPlayListCard(String userType, String contentIDSourceContent,
+			String playlistDataContentID, int assetType, String contLang, String playListTrayTitle, String guestToken,
+			String tvShowID, String channelID) {
 		System.out.println("entered getPlaylist");
-		String businessType="",ageRating="";
-		String playlistContentID="N/A",playlistbusinessType="N/A",playlistAgeRating="N/A",playlistplayerHeadPosition="N/A";
-		String playlistSeries="N/A",playlistChannel="N/A",playlistEpNo="N/A",playlistContentSpec="N/A",playlistHorizontalIndex="N/A",playlistImageUrl="N/A",playlistAssetSubtype="N/A";
-		String playlistContenturl="N/A",playlistContentTitle="N/A",playlistTvShowAssetSubtype="",playlistGenre="N/A",playlistSeasonID="";
-		int playlistTrailerSize=0,playlistSeasonSize=0,playlistPreviewSize=0,playlistOrderID=0,playlistRelatedSize=0;
-		String playlistCarouselID="N/A",playlistCarouselName="N/A",playlistTalaClickID="N/A",playlistTalaModelName="N/A",playlistTalaOrigin="N/A",playlistIsTala="N/A",playlistContentBillingType="N/A";
-		ArrayList trayDetails=new ArrayList<>();
-		ArrayList playlistSpecificValues=new ArrayList<>();
-		
-		Response singlePlaybackResponse = ResponseInstance.getSinglePlayBackDetails(playlistDataContentID,tvShowID,channelID,guestToken);
+		String businessType = "", ageRating = "";
+		String playlistContentID = "N/A", playlistbusinessType = "N/A", playlistAgeRating = "N/A",
+				playlistplayerHeadPosition = "N/A";
+		String playlistSeries = "N/A", playlistChannel = "N/A", playlistEpNo = "N/A", playlistContentSpec = "N/A",
+				playlistHorizontalIndex = "N/A", playlistImageUrl = "N/A", playlistAssetSubtype = "N/A";
+		String playlistContenturl = "N/A", playlistContentTitle = "N/A", playlistTvShowAssetSubtype = "",
+				playlistGenre = "N/A", playlistSeasonID = "";
+		int playlistTrailerSize = 0, playlistSeasonSize = 0, playlistPreviewSize = 0, playlistOrderID = 0,
+				playlistRelatedSize = 0;
+		String playlistCarouselID = "N/A", playlistCarouselName = "N/A", playlistTalaClickID = "N/A",
+				playlistTalaModelName = "N/A", playlistTalaOrigin = "N/A", playlistIsTala = "N/A",
+				playlistContentBillingType = "N/A";
+		ArrayList trayDetails = new ArrayList<>();
+		ArrayList playlistSpecificValues = new ArrayList<>();
+
+		Response singlePlaybackResponse = ResponseInstance.getSinglePlayBackDetails(playlistDataContentID, tvShowID,
+				channelID, guestToken);
 		try {
-			businessType=singlePlaybackResponse.jsonPath().get("assetDetails.business_type").toString();
-			System.out.println("businesssType"+businessType);
+			businessType = singlePlaybackResponse.jsonPath().get("assetDetails.business_type").toString();
+			System.out.println("businesssType" + businessType);
 			try {
-				ageRating=singlePlaybackResponse.jsonPath().get("assetDetails.age_rating");
+				ageRating = singlePlaybackResponse.jsonPath().get("assetDetails.age_rating");
+			} catch (Exception e) {
+				ageRating = "";
 			}
-			catch(Exception e) {ageRating="";}
-			if(ageRating==null) ageRating="";
-			System.out.println("ageRating"+ageRating);
+			if (ageRating == null)
+				ageRating = "";
+			System.out.println("ageRating" + ageRating);
 			try {
-				playlistSeasonID=singlePlaybackResponse.jsonPath().get("assetDetails.season");
-				System.out.println("playlistSeasonID"+playlistSeasonID);
-			}catch(Exception e) {}
-			boolean evaluateActualContent=false,evaluateTrailer=false,foundContent=false;
-		
-			if(userType.equals("Guest") && !businessType.equals("premium_downloadable") && !ageRating.equals("A")) {
+				playlistSeasonID = singlePlaybackResponse.jsonPath().get("assetDetails.season");
+				System.out.println("playlistSeasonID" + playlistSeasonID);
+			} catch (Exception e) {
+			}
+			boolean evaluateActualContent = false, evaluateTrailer = false, foundContent = false;
+
+			if (userType.equals("Guest") && !businessType.equals("premium_downloadable") && !ageRating.equals("A")) {
 				System.out.println("entered p11");
-				evaluateActualContent=true;
+				evaluateActualContent = true;
 			}
-			if(!userType.equals("Guest") && !businessType.equals("premium_downloadable")) {
+			if (!userType.equals("Guest") && !businessType.equals("premium_downloadable")) {
 				System.out.println("entered p22");
-				evaluateActualContent=true;
+				evaluateActualContent = true;
 			}
-			if(!userType.equals("SubscribedUser") && businessType.equals("premium_downloadable")) {
+			if (!userType.equals("SubscribedUser") && businessType.equals("premium_downloadable")) {
 				System.out.println("entered p33");
-				evaluateTrailer=true;
+				evaluateTrailer = true;
 			}
-			if(userType.equals("SubscribedUser") && businessType.equals("premium_downloadable")) {
+			if (userType.equals("SubscribedUser") && businessType.equals("premium_downloadable")) {
 				System.out.println("entered p44");
-				evaluateActualContent=true;
+				evaluateActualContent = true;
 			}
 			try {
-				if(evaluateActualContent==true) {
+				if (evaluateActualContent == true) {
 					System.out.println("inside playlist actualContent");
 					try {
-						playlistContentID=singlePlaybackResponse.jsonPath().get("assetDetails.id").toString();
-					}catch(Exception e) {}
-					System.out.println("playlistContentID"+playlistContentID);
-					playlistContentTitle=singlePlaybackResponse.jsonPath().get("assetDetails.title").toString().replace(",","-");
-					System.out.println("playlistContentTitle"+playlistContentTitle);
-					playlistAssetSubtype=singlePlaybackResponse.jsonPath().get("assetDetails.asset_subtype");										
-					if(playlistAssetSubtype!=null) playlistContentSpec=playlistAssetSubtype;
-					else playlistContentSpec="";
-					System.out.println("playlistAssetSubtype"+playlistAssetSubtype);
-					playlistGenre=singlePlaybackResponse.jsonPath().getList("assetDetails.genres.id").toString().replace(",","-");
-					System.out.println("playlistGenre"+playlistGenre);
-					try {
-						playlistChannel=singlePlaybackResponse.jsonPath().getList("assetDetails.channels.original_title").toString().replace(",","-");
-					}catch(Exception e) {}
-					System.out.println("playlistChannel"+playlistChannel);
-					try {
-						playlistSeries=singlePlaybackResponse.jsonPath().get("assetDetails.tvshow_name").toString().replace(",","-");
-					}catch(Exception e) {
-						playlistSeries=playlistContentTitle;
+						playlistContentID = singlePlaybackResponse.jsonPath().get("assetDetails.id").toString();
+					} catch (Exception e) {
 					}
-					System.out.println("playlistSeries"+playlistSeries);
+					System.out.println("playlistContentID" + playlistContentID);
+					playlistContentTitle = singlePlaybackResponse.jsonPath().get("assetDetails.title").toString()
+							.replace(",", "-");
+					System.out.println("playlistContentTitle" + playlistContentTitle);
+					playlistAssetSubtype = singlePlaybackResponse.jsonPath().get("assetDetails.asset_subtype");
+					if (playlistAssetSubtype != null)
+						playlistContentSpec = playlistAssetSubtype;
+					else
+						playlistContentSpec = "";
+					System.out.println("playlistAssetSubtype" + playlistAssetSubtype);
+					playlistGenre = singlePlaybackResponse.jsonPath().getList("assetDetails.genres.id").toString()
+							.replace(",", "-");
+					System.out.println("playlistGenre" + playlistGenre);
 					try {
-						playlistEpNo=singlePlaybackResponse.jsonPath().get("assetDetails.orderid").toString();
-					}catch(Exception e) {}
-					System.out.println("playlistEpNo"+playlistEpNo);
-					if(playlistEpNo.equals("0")) playlistEpNo="N/A";
-					try {
-						playlistContentBillingType=singlePlaybackResponse.jsonPath().get("assetDetails.billing_type").toString();
-					}catch(Exception e) {playlistContentBillingType="N/A";}
-					if(playlistContentBillingType.equals("")) playlistContentBillingType="N/A";
-					System.out.println("playlistContentBillingType"+playlistContentBillingType);
-					
-					try {
-						playlistTvShowAssetSubtype=singlePlaybackResponse.jsonPath().get("showDetails.asset_subtype").toString();
-					}catch(Exception e) {
-						playlistTvShowAssetSubtype="";
+						playlistChannel = singlePlaybackResponse.jsonPath()
+								.getList("assetDetails.channels.original_title").toString().replace(",", "-");
+					} catch (Exception e) {
 					}
-					System.out.println("playlistTvShowAssetSubtype"+playlistTvShowAssetSubtype);
-					
-					foundContent=true;
+					System.out.println("playlistChannel" + playlistChannel);
+					try {
+						playlistSeries = singlePlaybackResponse.jsonPath().get("assetDetails.tvshow_name").toString()
+								.replace(",", "-");
+					} catch (Exception e) {
+						playlistSeries = playlistContentTitle;
+					}
+					System.out.println("playlistSeries" + playlistSeries);
+					try {
+						playlistEpNo = singlePlaybackResponse.jsonPath().get("assetDetails.orderid").toString();
+					} catch (Exception e) {
+					}
+					System.out.println("playlistEpNo" + playlistEpNo);
+					if (playlistEpNo.equals("0"))
+						playlistEpNo = "N/A";
+					try {
+						playlistContentBillingType = singlePlaybackResponse.jsonPath().get("assetDetails.billing_type")
+								.toString();
+					} catch (Exception e) {
+						playlistContentBillingType = "N/A";
+					}
+					if (playlistContentBillingType.equals(""))
+						playlistContentBillingType = "N/A";
+					System.out.println("playlistContentBillingType" + playlistContentBillingType);
+
+					try {
+						playlistTvShowAssetSubtype = singlePlaybackResponse.jsonPath().get("showDetails.asset_subtype")
+								.toString();
+					} catch (Exception e) {
+						playlistTvShowAssetSubtype = "";
+					}
+					System.out.println("playlistTvShowAssetSubtype" + playlistTvShowAssetSubtype);
+
+					foundContent = true;
 				}
-				if(evaluateTrailer==true) {
+				if (evaluateTrailer == true) {
 					System.out.println("inside playlist evaluateTrailer");
 					try {
-						playlistContentID=singlePlaybackResponse.jsonPath().get("trailerDetails.id").toString();
-					}catch(Exception e) {}
-					System.out.println("playlistContentID"+playlistContentID);
-					playlistContentTitle=singlePlaybackResponse.jsonPath().get("trailerDetails.title").toString().replace(",","-");
-					System.out.println("playlistContentTitle"+playlistContentTitle);
-					playlistAssetSubtype=singlePlaybackResponse.jsonPath().get("trailerDetails.asset_subtype");											
-					if(playlistAssetSubtype!=null) playlistContentSpec=playlistAssetSubtype;
-					else playlistAssetSubtype="";
-					System.out.println("playlistAssetSubtype"+playlistAssetSubtype);
-					playlistGenre=singlePlaybackResponse.jsonPath().getList("trailerDetails.genres.id").toString().replace(",","-");
-					System.out.println("playlistGenre"+playlistGenre);
-					try {
-						playlistChannel=singlePlaybackResponse.jsonPath().getList("trailerDetails.channels.original_title").toString().replace(",","-");
-					}catch(Exception e) {}
-					System.out.println("playlistChannel"+playlistChannel);
-					try {
-						playlistSeries=singlePlaybackResponse.jsonPath().get("trailerDetails.tvshow_name").toString().replace(",","-");
-					}catch(Exception e) {
-						playlistSeries=playlistContentTitle;
+						playlistContentID = singlePlaybackResponse.jsonPath().get("trailerDetails.id").toString();
+					} catch (Exception e) {
 					}
-					System.out.println("playlistSeries"+playlistSeries);
+					System.out.println("playlistContentID" + playlistContentID);
+					playlistContentTitle = singlePlaybackResponse.jsonPath().get("trailerDetails.title").toString()
+							.replace(",", "-");
+					System.out.println("playlistContentTitle" + playlistContentTitle);
+					playlistAssetSubtype = singlePlaybackResponse.jsonPath().get("trailerDetails.asset_subtype");
+					if (playlistAssetSubtype != null)
+						playlistContentSpec = playlistAssetSubtype;
+					else
+						playlistAssetSubtype = "";
+					System.out.println("playlistAssetSubtype" + playlistAssetSubtype);
+					playlistGenre = singlePlaybackResponse.jsonPath().getList("trailerDetails.genres.id").toString()
+							.replace(",", "-");
+					System.out.println("playlistGenre" + playlistGenre);
 					try {
-						playlistEpNo=singlePlaybackResponse.jsonPath().get("trailerDetails.orderid").toString();
-					}catch(Exception e) {}
-					System.out.println("playlistEpNo"+playlistEpNo);
-					if(playlistEpNo.equals("0")) playlistEpNo="N/A";
-					try {
-						playlistContentBillingType=singlePlaybackResponse.jsonPath().get("trailerDetails.billing_type").toString();
-					}catch(Exception e) {playlistContentBillingType="N/A";}
-					if(playlistContentBillingType.equals("")) playlistContentBillingType="N/A";
-					System.out.println("playlistContentBillingType"+playlistContentBillingType);
-					
-					try {
-						playlistTvShowAssetSubtype=singlePlaybackResponse.jsonPath().get("showDetails.asset_subtype").toString();
-					}catch(Exception e) {
-						playlistTvShowAssetSubtype="";
+						playlistChannel = singlePlaybackResponse.jsonPath()
+								.getList("trailerDetails.channels.original_title").toString().replace(",", "-");
+					} catch (Exception e) {
 					}
-					System.out.println("playlistTvShowAssetSubtype"+playlistTvShowAssetSubtype);
-					
-					foundContent=true;
+					System.out.println("playlistChannel" + playlistChannel);
+					try {
+						playlistSeries = singlePlaybackResponse.jsonPath().get("trailerDetails.tvshow_name").toString()
+								.replace(",", "-");
+					} catch (Exception e) {
+						playlistSeries = playlistContentTitle;
+					}
+					System.out.println("playlistSeries" + playlistSeries);
+					try {
+						playlistEpNo = singlePlaybackResponse.jsonPath().get("trailerDetails.orderid").toString();
+					} catch (Exception e) {
+					}
+					System.out.println("playlistEpNo" + playlistEpNo);
+					if (playlistEpNo.equals("0"))
+						playlistEpNo = "N/A";
+					try {
+						playlistContentBillingType = singlePlaybackResponse.jsonPath()
+								.get("trailerDetails.billing_type").toString();
+					} catch (Exception e) {
+						playlistContentBillingType = "N/A";
+					}
+					if (playlistContentBillingType.equals(""))
+						playlistContentBillingType = "N/A";
+					System.out.println("playlistContentBillingType" + playlistContentBillingType);
+
+					try {
+						playlistTvShowAssetSubtype = singlePlaybackResponse.jsonPath().get("showDetails.asset_subtype")
+								.toString();
+					} catch (Exception e) {
+						playlistTvShowAssetSubtype = "";
+					}
+					System.out.println("playlistTvShowAssetSubtype" + playlistTvShowAssetSubtype);
+
+					foundContent = true;
 				}
+			} catch (Exception e) {
 			}
-			catch(Exception e) {}
-			if(foundContent==true) {
+			if (foundContent == true) {
 				Mixpanel.FEProp.setProperty("Channel Name", playlistChannel);
 				Mixpanel.FEProp.setProperty("Series", playlistSeries);
-				if(playlistContentSpec.equals("episode")) {
+				if (playlistContentSpec.equals("episode")) {
 					Mixpanel.FEProp.setProperty("Episode No", playlistEpNo);
-				}
-				else {
+				} else {
 					Mixpanel.FEProp.setProperty("Episode No", "N/A");
 				}
 				Mixpanel.FEProp.setProperty("Image URL", playlistImageUrl);
-				Mixpanel.FEProp.setProperty("Content Specification", playlistContentSpec);	
+				Mixpanel.FEProp.setProperty("Content Specification", playlistContentSpec);
 				Mixpanel.FEProp.setProperty("Content Billing Type", playlistContentBillingType);
-				String  topCategory=topCategoryForPlayer(assetType,playlistAssetSubtype,playlistGenre,playlistTvShowAssetSubtype);
+				String topCategory = topCategoryForPlayer(assetType, playlistAssetSubtype, playlistGenre,
+						playlistTvShowAssetSubtype);
 				Mixpanel.FEProp.setProperty("Top Category", topCategory);
-				playlistSpecificValues=getPlayListSpecificValues(userType,contentIDSourceContent,playlistDataContentID,contLang,playListTrayTitle,playlistSeasonID,guestToken);
-				playlistCarouselID=playlistSpecificValues.get(0).toString();
-				playlistCarouselName=playlistSpecificValues.get(1).toString();
-				playlistTalaClickID=playlistSpecificValues.get(2).toString();
-				playlistTalaModelName=playlistSpecificValues.get(3).toString();
-				playlistTalaOrigin=playlistSpecificValues.get(4).toString();
-				playlistIsTala=playlistSpecificValues.get(5).toString();
-				
+				playlistSpecificValues = getPlayListSpecificValues(userType, contentIDSourceContent,
+						playlistDataContentID, contLang, playListTrayTitle, playlistSeasonID, guestToken);
+				playlistCarouselID = playlistSpecificValues.get(0).toString();
+				playlistCarouselName = playlistSpecificValues.get(1).toString();
+				playlistTalaClickID = playlistSpecificValues.get(2).toString();
+				playlistTalaModelName = playlistSpecificValues.get(3).toString();
+				playlistTalaOrigin = playlistSpecificValues.get(4).toString();
+				playlistIsTala = playlistSpecificValues.get(5).toString();
+
 				Mixpanel.FEProp.setProperty("Carousal Name", playlistCarouselName);
 				Mixpanel.FEProp.setProperty("Carousal ID", playlistCarouselID);
-				//Mixpanel.FEProp.setProperty("Talamoos clickID", playlistTalaClickID);
+				// Mixpanel.FEProp.setProperty("Talamoos clickID", playlistTalaClickID);
 				Mixpanel.FEProp.setProperty("Talamoos modelName", playlistTalaModelName);
 				Mixpanel.FEProp.setProperty("Talamoos origin", playlistTalaOrigin);
 				Mixpanel.FEProp.setProperty("isTalamoos", playlistIsTala);
@@ -6305,102 +6540,114 @@ public class ResponseInstance {
 				trayDetails.add(playlistContentTitle);
 				trayDetails.add(playlistTalaClickID);
 				trayDetails.add(playlistAssetSubtype);
-			}
-			else trayDetails.add("");		
+			} else
+				trayDetails.add("");
+		} catch (Exception e) {
+			trayDetails.add("");
 		}
-		catch(Exception e) {trayDetails.add("");}	
 		return trayDetails;
 	}
-	
-	public static ArrayList<String> getPlayListSpecificValues (String userType,String contentIDSourceContent,String playlistDataContentID,String contentLang,String playListTrayTitle,String playlistSeasonID,String guestToken) {
-		System.out.println("entered getPlayListValues");
-		
-		String upNextcontentID="",upNextdataContentID="",upNextbusinessType="",upNextAgeRating="",upNextplayerHeadPosition="";
-		String upNextSeries="",upNextChannel="",upNextEpNo="",upNextcontentSpec="",upNextHorizontalIndex="",upNextimageUrl="";
-		String upNextcontenturl="",upNextcontentTitle="",upNextAudioLang="";
-		String tvShowID="";
-		
-		String carouselID="N/A",carouselName="N/A",talamoosClickId="N/A",talamoosModelName="N/A",talamoosOrigin="N/A",isTalamoos="false";
 
-		int trailerSize=0,seasonSize=0,previewSize=0,orderID=0;
-		ArrayList playListSpecificValues=new ArrayList<>();
-		if(playListTrayTitle.contains("Up Next")) {
+	public static ArrayList<String> getPlayListSpecificValues(String userType, String contentIDSourceContent,
+			String playlistDataContentID, String contentLang, String playListTrayTitle, String playlistSeasonID,
+			String guestToken) {
+		System.out.println("entered getPlayListValues");
+
+		String upNextcontentID = "", upNextdataContentID = "", upNextbusinessType = "", upNextAgeRating = "",
+				upNextplayerHeadPosition = "";
+		String upNextSeries = "", upNextChannel = "", upNextEpNo = "", upNextcontentSpec = "",
+				upNextHorizontalIndex = "", upNextimageUrl = "";
+		String upNextcontenturl = "", upNextcontentTitle = "", upNextAudioLang = "";
+		String tvShowID = "";
+
+		String carouselID = "N/A", carouselName = "N/A", talamoosClickId = "N/A", talamoosModelName = "N/A",
+				talamoosOrigin = "N/A", isTalamoos = "false";
+
+		int trailerSize = 0, seasonSize = 0, previewSize = 0, orderID = 0;
+		ArrayList playListSpecificValues = new ArrayList<>();
+		if (playListTrayTitle.contains("Up Next")) {
 			System.out.println("entered upnext");
-			Response upnextPlaylistResponse=getUpNextContents(playlistSeasonID,contentIDSourceContent);
-			String upnextTrayTitle=upnextPlaylistResponse.jsonPath().get("title");
-			int upnextItems=upnextPlaylistResponse.jsonPath().get("items.size()");
-			boolean selectItem=false;
-			for(int upnextItem=0;upnextItem<upnextItems;upnextItem++) {
-				System.out.println("upnextItem"+upnextItem);
-				upNextdataContentID=upnextPlaylistResponse.jsonPath().get("items["+upnextItem+"].id");
-				System.out.println("upNextdataContentID"+upNextdataContentID);
-				System.out.println(upnextPlaylistResponse.jsonPath().get("items["+upnextItem+"].title").toString());
-				System.out.println("playlistDataContentID"+playlistDataContentID);
-				if(upNextdataContentID.trim().equals(playlistDataContentID.trim())) {
+			Response upnextPlaylistResponse = getUpNextContents(playlistSeasonID, contentIDSourceContent);
+			String upnextTrayTitle = upnextPlaylistResponse.jsonPath().get("title");
+			int upnextItems = upnextPlaylistResponse.jsonPath().get("items.size()");
+			boolean selectItem = false;
+			for (int upnextItem = 0; upnextItem < upnextItems; upnextItem++) {
+				System.out.println("upnextItem" + upnextItem);
+				upNextdataContentID = upnextPlaylistResponse.jsonPath().get("items[" + upnextItem + "].id");
+				System.out.println("upNextdataContentID" + upNextdataContentID);
+				System.out.println(upnextPlaylistResponse.jsonPath().get("items[" + upnextItem + "].title").toString());
+				System.out.println("playlistDataContentID" + playlistDataContentID);
+				if (upNextdataContentID.trim().equals(playlistDataContentID.trim())) {
 					try {
-						carouselID=playlistDataContentID;
-						System.out.println("carouselID"+carouselID);
-						//carouselName=upnextPlaylistResponse.jsonPath().get("title");
-						//System.out.println("carouselName"+carouselName);
+						carouselID = playlistDataContentID;
+						System.out.println("carouselID" + carouselID);
+						// carouselName=upnextPlaylistResponse.jsonPath().get("title");
+						// System.out.println("carouselName"+carouselName);
 						break;
+					} catch (Exception e) {
 					}
-					catch(Exception e) {}
 				}
 			}
 		}
-		
-		if(playListTrayTitle.contains("Recommended") || playListTrayTitle.contains("Related")) {
+
+		if (playListTrayTitle.contains("Recommended") || playListTrayTitle.contains("Related")) {
 			System.out.println("entered reco");
-			Response recoPlayistResponse=ResponseInstance.getRecoDataForContent(userType,contentIDSourceContent,contentLang,guestToken);
-			int requiredRecoTraysCount=recoPlayistResponse.jsonPath().get("buckets.size()");
-			int requiredRecoTray=0;
-			String playListTrayTitleTemp=playListTrayTitle.split(" ")[0];
-			System.out.println("playListTrayTitleTemp"+playListTrayTitleTemp);
-			for(int i=0;i<requiredRecoTraysCount;i++) {
-				String tempTrayName=recoPlayistResponse.jsonPath().get("buckets["+i+"].title");
-				System.out.println("tempTrayName"+tempTrayName);
-				if(tempTrayName.contains(playListTrayTitleTemp)) {
-					requiredRecoTray=i;
+			Response recoPlayistResponse = ResponseInstance.getRecoDataForContent(userType, contentIDSourceContent,
+					contentLang, guestToken);
+			int requiredRecoTraysCount = recoPlayistResponse.jsonPath().get("buckets.size()");
+			int requiredRecoTray = 0;
+			String playListTrayTitleTemp = playListTrayTitle.split(" ")[0];
+			System.out.println("playListTrayTitleTemp" + playListTrayTitleTemp);
+			for (int i = 0; i < requiredRecoTraysCount; i++) {
+				String tempTrayName = recoPlayistResponse.jsonPath().get("buckets[" + i + "].title");
+				System.out.println("tempTrayName" + tempTrayName);
+				if (tempTrayName.contains(playListTrayTitleTemp)) {
+					requiredRecoTray = i;
 					break;
 				}
 			}
-			int recoItems=recoPlayistResponse.jsonPath().get("buckets["+requiredRecoTray+"].items.size()");
-			carouselID=recoPlayistResponse.jsonPath().get("buckets["+requiredRecoTray+"].id");
-			System.out.println("carouselID"+carouselID);
-			talamoosModelName=recoPlayistResponse.jsonPath().get("buckets["+requiredRecoTray+"].modelName");
-			System.out.println("talamoosModelName"+talamoosModelName);
-			talamoosOrigin=carouselID;
-			System.out.println("talamoosOrigin"+talamoosOrigin);
-			if(!talamoosOrigin.equals("N/A")) isTalamoos="true";
-			System.out.println("isTalamoos"+isTalamoos);
-			
-			for(int recoItem=0;recoItem<recoItems;recoItem++) {
-				System.out.println("recoItem"+recoItem);
-				upNextdataContentID=recoPlayistResponse.jsonPath().get("buckets["+requiredRecoTray+"].items["+recoItem+"].id");
-				System.out.println("upNextdataContentID"+upNextdataContentID);
-				System.out.println(recoPlayistResponse.jsonPath().get("buckets["+requiredRecoTray+"].items["+recoItem+"].title").toString());
-				System.out.println("playlistDataContentID"+playlistDataContentID);
-				if(upNextdataContentID.trim().equals(playlistDataContentID.trim())) {
-					try {						
-						talamoosClickId=recoPlayistResponse.jsonPath().get("buckets["+requiredRecoTray+"].items["+recoItem+"].clickID");
-						System.out.println("talamoosClickId"+talamoosClickId);												
+			int recoItems = recoPlayistResponse.jsonPath().get("buckets[" + requiredRecoTray + "].items.size()");
+			carouselID = recoPlayistResponse.jsonPath().get("buckets[" + requiredRecoTray + "].id");
+			System.out.println("carouselID" + carouselID);
+			talamoosModelName = recoPlayistResponse.jsonPath().get("buckets[" + requiredRecoTray + "].modelName");
+			System.out.println("talamoosModelName" + talamoosModelName);
+			talamoosOrigin = carouselID;
+			System.out.println("talamoosOrigin" + talamoosOrigin);
+			if (!talamoosOrigin.equals("N/A"))
+				isTalamoos = "true";
+			System.out.println("isTalamoos" + isTalamoos);
+
+			for (int recoItem = 0; recoItem < recoItems; recoItem++) {
+				System.out.println("recoItem" + recoItem);
+				upNextdataContentID = recoPlayistResponse.jsonPath()
+						.get("buckets[" + requiredRecoTray + "].items[" + recoItem + "].id");
+				System.out.println("upNextdataContentID" + upNextdataContentID);
+				System.out.println(recoPlayistResponse.jsonPath()
+						.get("buckets[" + requiredRecoTray + "].items[" + recoItem + "].title").toString());
+				System.out.println("playlistDataContentID" + playlistDataContentID);
+				if (upNextdataContentID.trim().equals(playlistDataContentID.trim())) {
+					try {
+						talamoosClickId = recoPlayistResponse.jsonPath()
+								.get("buckets[" + requiredRecoTray + "].items[" + recoItem + "].clickID");
+						System.out.println("talamoosClickId" + talamoosClickId);
 						break;
+					} catch (Exception e) {
 					}
-					catch(Exception e) {}
 				}
 			}
-		}	
-		if(playListTrayTitle.contains("Similar")) {
-			carouselID=playlistDataContentID;
-			System.out.println("carouselID"+carouselID);
-			talamoosModelName="N/A";
-			System.out.println("talamoosModelName"+talamoosModelName);
-			talamoosOrigin="N/A";
-			System.out.println("talamoosOrigin"+talamoosOrigin);
-			if(!talamoosOrigin.equals("N/A")) isTalamoos="true";
-			System.out.println("isTalamoos"+isTalamoos);
 		}
-		carouselName=playListTrayTitle;
+		if (playListTrayTitle.contains("Similar")) {
+			carouselID = playlistDataContentID;
+			System.out.println("carouselID" + carouselID);
+			talamoosModelName = "N/A";
+			System.out.println("talamoosModelName" + talamoosModelName);
+			talamoosOrigin = "N/A";
+			System.out.println("talamoosOrigin" + talamoosOrigin);
+			if (!talamoosOrigin.equals("N/A"))
+				isTalamoos = "true";
+			System.out.println("isTalamoos" + isTalamoos);
+		}
+		carouselName = playListTrayTitle;
 		playListSpecificValues.add(carouselID);
 		playListSpecificValues.add(carouselName);
 		playListSpecificValues.add(talamoosClickId);
@@ -6409,223 +6656,275 @@ public class ResponseInstance {
 		playListSpecificValues.add(isTalamoos);
 		return playListSpecificValues;
 	}
-	
-	public static ArrayList<String> setUpnextCard (String userType,String contentIDSourceContent,String upnextDataContentIdUI,int assetType,String contLang,String upnextDataMinutelyUrlUI,String upnextTrayTitleUI,String seasonID,String guestToken) {
-		
+
+	public static ArrayList<String> setUpnextCard(String userType, String contentIDSourceContent,
+			String upnextDataContentIdUI, int assetType, String contLang, String upnextDataMinutelyUrlUI,
+			String upnextTrayTitleUI, String seasonID, String guestToken) {
+
 		System.out.println("entered setUpnextCard");
-		
-		String upnextContentID="N/A",upnextDataContentID="N/A",upnextAssetType="N/A",upnextAssetSubtype="N/A",upnextbusinessType="N/A",upnextAgeRating="N/A",upnextplayerHeadPosition="N/A";
-		String upnextSeries="N/A",upnextChannel="N/A",upnextEpNo="N/A",upnextContentSpec="N/A",upnextHorizontalIndex="N/A",upnextImageUrl="N/A";
-		String upnextContenturl="N/A",upnextContentTitle="N/A",upnextTvShowAssetSubtype="N/A",upnextGenre="N/A",upnextSeasonID="N/A",upnextContentBillingType="N/A";
-		String upnexTVShowID="",upnextChannelID="";		
-		int upnextTrailerSize=0,upnextSeasonSize=0,upnextPreviewSize=0,upnextOrderID=0,upnextRelatedSize=0;
-		String upnextCarouselID="N/A",upnextCarouselName="N/A",upnextTalaClickID="N/A",upnextTalaModelName="N/A",upnextTalaOrigin="N/A",upnextIsTala="N/A";
-		ArrayList trayDetails=new ArrayList<>();
-		ArrayList upnextSpecificValues=new ArrayList<>();
-		upnextDataContentID=upnextDataContentIdUI;
-		if(upnextDataMinutelyUrlUI.contains("movies/details")) upnexTVShowID="";
-		if(upnextDataMinutelyUrlUI.contains("tvshows/details")) {
-			upnexTVShowID=upnextDataMinutelyUrlUI.split(".com")[1].split("/")[4];			
+
+		String upnextContentID = "N/A", upnextDataContentID = "N/A", upnextAssetType = "N/A",
+				upnextAssetSubtype = "N/A", upnextbusinessType = "N/A", upnextAgeRating = "N/A",
+				upnextplayerHeadPosition = "N/A";
+		String upnextSeries = "N/A", upnextChannel = "N/A", upnextEpNo = "N/A", upnextContentSpec = "N/A",
+				upnextHorizontalIndex = "N/A", upnextImageUrl = "N/A";
+		String upnextContenturl = "N/A", upnextContentTitle = "N/A", upnextTvShowAssetSubtype = "N/A",
+				upnextGenre = "N/A", upnextSeasonID = "N/A", upnextContentBillingType = "N/A";
+		String upnexTVShowID = "", upnextChannelID = "";
+		int upnextTrailerSize = 0, upnextSeasonSize = 0, upnextPreviewSize = 0, upnextOrderID = 0,
+				upnextRelatedSize = 0;
+		String upnextCarouselID = "N/A", upnextCarouselName = "N/A", upnextTalaClickID = "N/A",
+				upnextTalaModelName = "N/A", upnextTalaOrigin = "N/A", upnextIsTala = "N/A";
+		ArrayList trayDetails = new ArrayList<>();
+		ArrayList upnextSpecificValues = new ArrayList<>();
+		upnextDataContentID = upnextDataContentIdUI;
+		if (upnextDataMinutelyUrlUI.contains("movies/details"))
+			upnexTVShowID = "";
+		if (upnextDataMinutelyUrlUI.contains("tvshows/details")) {
+			upnexTVShowID = upnextDataMinutelyUrlUI.split(".com")[1].split("/")[4];
 		}
-		if(upnextDataMinutelyUrlUI.contains("kids-shows")) {
-			upnexTVShowID=upnextDataMinutelyUrlUI.split(".com")[1].split("/")[4];			
+		if (upnextDataMinutelyUrlUI.contains("kids-shows")) {
+			upnexTVShowID = upnextDataMinutelyUrlUI.split(".com")[1].split("/")[4];
 		}
-		if(upnextDataMinutelyUrlUI.contains("music-videos")) upnexTVShowID="";		
-		if(upnextDataMinutelyUrlUI.contains("zee5originals/details")) {
-			upnexTVShowID=upnextDataMinutelyUrlUI.split(".com")[1].split("/")[4];			
+		if (upnextDataMinutelyUrlUI.contains("music-videos"))
+			upnexTVShowID = "";
+		if (upnextDataMinutelyUrlUI.contains("zee5originals/details")) {
+			upnexTVShowID = upnextDataMinutelyUrlUI.split(".com")[1].split("/")[4];
 		}
-		if(upnextDataMinutelyUrlUI.contains("videos/details")) upnexTVShowID="";
-		if(upnextDataMinutelyUrlUI.contains("channels/details")) upnextChannelID=upnextDataContentIdUI;
-		
-		System.out.println("upnexChannelID:"+upnextChannelID);
-		System.out.println("upnexTVShowID:"+upnexTVShowID);
-		System.out.println("upnextDataContentIdUI:"+upnextDataContentIdUI);
-		Response upnextSinglePlaybackDetails=ResponseInstance.getSinglePlayBackDetails(upnextDataContentIdUI,upnexTVShowID,upnextChannelID,guestToken);
+		if (upnextDataMinutelyUrlUI.contains("videos/details"))
+			upnexTVShowID = "";
+		if (upnextDataMinutelyUrlUI.contains("channels/details"))
+			upnextChannelID = upnextDataContentIdUI;
+
+		System.out.println("upnexChannelID:" + upnextChannelID);
+		System.out.println("upnexTVShowID:" + upnexTVShowID);
+		System.out.println("upnextDataContentIdUI:" + upnextDataContentIdUI);
+		Response upnextSinglePlaybackDetails = ResponseInstance.getSinglePlayBackDetails(upnextDataContentIdUI,
+				upnexTVShowID, upnextChannelID, guestToken);
 		try {
-			String businessType=upnextSinglePlaybackDetails.jsonPath().get("assetDetails.business_type").toString();
-			System.out.println("businesssType"+businessType);
-			String ageRating=upnextSinglePlaybackDetails.jsonPath().get("assetDetails.age_rating").toString();
-			System.out.println("ageRating"+ageRating);
-			
+			String businessType = upnextSinglePlaybackDetails.jsonPath().get("assetDetails.business_type").toString();
+			System.out.println("businesssType" + businessType);
+			String ageRating = upnextSinglePlaybackDetails.jsonPath().get("assetDetails.age_rating").toString();
+			System.out.println("ageRating" + ageRating);
+
 			try {
-				upnextSeasonID=seasonID;
-				System.out.println("upnextSeasonID"+upnextSeasonID);
-			}catch(Exception e) {}
-			boolean evaluateTrailer=false,evaluateActualContent=false,foundSameDataIDContentID=false,foundDifferentDataIDContentID=false;
-			if(!businessType.equals("premium_downloadable")) {
+				upnextSeasonID = seasonID;
+				System.out.println("upnextSeasonID" + upnextSeasonID);
+			} catch (Exception e) {
+			}
+			boolean evaluateTrailer = false, evaluateActualContent = false, foundSameDataIDContentID = false,
+					foundDifferentDataIDContentID = false;
+			if (!businessType.equals("premium_downloadable")) {
 				System.out.println("Upnext is a free content");
-				if(userType.equals("Guest") && ageRating.equals("A")) {
-					System.out.println("Upnext content cannot played for Guest user since it is A content");	
+				if (userType.equals("Guest") && ageRating.equals("A")) {
+					System.out.println("Upnext content cannot played for Guest user since it is A content");
 					trayDetails.add("error");
-				}
-				else evaluateActualContent=true;
-			}
-			else {
+				} else
+					evaluateActualContent = true;
+			} else {
 				System.out.println("Upnext is a premium content");
-				if(!userType.equals("SubscribedUser")) {
-					evaluateTrailer=true;
-				}
-				else evaluateActualContent=true;
+				if (!userType.equals("SubscribedUser")) {
+					evaluateTrailer = true;
+				} else
+					evaluateActualContent = true;
 			}
-			if(evaluateActualContent) {
+			if (evaluateActualContent) {
 				System.out.println("inside actualContent");
 				try {
-					upnextContentID=upnextSinglePlaybackDetails.jsonPath().get("assetDetails.id").toString();
-				}catch(Exception e) {trayDetails.add("");return trayDetails;}
-				System.out.println("upnextContentID"+upnextContentID);
-				upnextContentTitle=upnextSinglePlaybackDetails.jsonPath().get("assetDetails.title").toString().replace(",","-");
-				System.out.println("upnextContentTitle"+upnextContentTitle);
-				upnextAssetType=upnextSinglePlaybackDetails.jsonPath().get("assetDetails.asset_type").toString();
-				System.out.println("upnextAssetType"+upnextAssetType);
-				upnextAssetSubtype=upnextSinglePlaybackDetails.jsonPath().get("assetDetails.asset_subtype");
-				System.out.println("upnextAssetSubtype"+upnextAssetSubtype);
-				upnextContentSpec=upnextAssetSubtype;
-				upnextGenre=upnextSinglePlaybackDetails.jsonPath().getList("assetDetails.genres.id").toString().replace(",","-");
-				System.out.println("upnextGenre"+upnextGenre);
-				try {
-					upnextChannel=upnextSinglePlaybackDetails.jsonPath().getList("assetDetails.channels.original_title").toString().replace(",","-");
-				}catch(Exception e) {}
-				System.out.println("upnextChannel"+upnextChannel);
-				try {
-					upnextSeries=upnextSinglePlaybackDetails.jsonPath().get("assetDetails.tvshow_name").toString().replace(",","-");
-				}catch(Exception e) {
-					upnextSeries=upnextContentTitle;
+					upnextContentID = upnextSinglePlaybackDetails.jsonPath().get("assetDetails.id").toString();
+				} catch (Exception e) {
+					trayDetails.add("");
+					return trayDetails;
 				}
-				System.out.println("upnextSeries"+upnextSeries);
+				System.out.println("upnextContentID" + upnextContentID);
+				upnextContentTitle = upnextSinglePlaybackDetails.jsonPath().get("assetDetails.title").toString()
+						.replace(",", "-");
+				System.out.println("upnextContentTitle" + upnextContentTitle);
+				upnextAssetType = upnextSinglePlaybackDetails.jsonPath().get("assetDetails.asset_type").toString();
+				System.out.println("upnextAssetType" + upnextAssetType);
+				upnextAssetSubtype = upnextSinglePlaybackDetails.jsonPath().get("assetDetails.asset_subtype");
+				System.out.println("upnextAssetSubtype" + upnextAssetSubtype);
+				upnextContentSpec = upnextAssetSubtype;
+				upnextGenre = upnextSinglePlaybackDetails.jsonPath().getList("assetDetails.genres.id").toString()
+						.replace(",", "-");
+				System.out.println("upnextGenre" + upnextGenre);
 				try {
-					upnextEpNo=upnextSinglePlaybackDetails.jsonPath().get("assetDetails.orderid").toString();
-				}catch(Exception e) {}
-				System.out.println("upnextEpNo"+upnextEpNo);
-				if(upnextEpNo.equals("0")) upnextEpNo="N/A";
-				upnextHorizontalIndex="1";//First card is the upnext
-				System.out.println("upnextHorizontalIndex"+upnextHorizontalIndex);
-				try {
-					upnextContentBillingType=upnextSinglePlaybackDetails.jsonPath().get("assetDetails.billing_type").toString();
-				}catch(Exception e) {upnextContentBillingType="N/A";}
-				if(upnextContentBillingType.equals("")) upnextContentBillingType="N/A";
-				System.out.println("upnextContentBillingType"+upnextContentBillingType);
-				
-				try {
-					upnextTvShowAssetSubtype=upnextSinglePlaybackDetails.jsonPath().get("showDetails.asset_subtype").toString();
-				}catch(Exception e) {
-					upnextTvShowAssetSubtype="";
+					upnextChannel = upnextSinglePlaybackDetails.jsonPath()
+							.getList("assetDetails.channels.original_title").toString().replace(",", "-");
+				} catch (Exception e) {
 				}
-				System.out.println("upnextTvShowAssetSubtype"+upnextTvShowAssetSubtype);
+				System.out.println("upnextChannel" + upnextChannel);
+				try {
+					upnextSeries = upnextSinglePlaybackDetails.jsonPath().get("assetDetails.tvshow_name").toString()
+							.replace(",", "-");
+				} catch (Exception e) {
+					upnextSeries = upnextContentTitle;
+				}
+				System.out.println("upnextSeries" + upnextSeries);
+				try {
+					upnextEpNo = upnextSinglePlaybackDetails.jsonPath().get("assetDetails.orderid").toString();
+				} catch (Exception e) {
+				}
+				System.out.println("upnextEpNo" + upnextEpNo);
+				if (upnextEpNo.equals("0"))
+					upnextEpNo = "N/A";
+				upnextHorizontalIndex = "1";// First card is the upnext
+				System.out.println("upnextHorizontalIndex" + upnextHorizontalIndex);
+				try {
+					upnextContentBillingType = upnextSinglePlaybackDetails.jsonPath().get("assetDetails.billing_type")
+							.toString();
+				} catch (Exception e) {
+					upnextContentBillingType = "N/A";
+				}
+				if (upnextContentBillingType.equals(""))
+					upnextContentBillingType = "N/A";
+				System.out.println("upnextContentBillingType" + upnextContentBillingType);
+
+				try {
+					upnextTvShowAssetSubtype = upnextSinglePlaybackDetails.jsonPath().get("showDetails.asset_subtype")
+							.toString();
+				} catch (Exception e) {
+					upnextTvShowAssetSubtype = "";
+				}
+				System.out.println("upnextTvShowAssetSubtype" + upnextTvShowAssetSubtype);
 			}
-			if(evaluateTrailer==true) {
+			if (evaluateTrailer == true) {
 				System.out.println("inside evaluateTrailer");
 				try {
-					upnextContentID=upnextSinglePlaybackDetails.jsonPath().get("trailerDetails.id").toString();
-				}catch(Exception e) {trayDetails.add("");return trayDetails;}
-				System.out.println("upnextContentID"+upnextContentID);
-				upnextContentTitle=upnextSinglePlaybackDetails.jsonPath().get("trailerDetails.title").toString();
-				System.out.println("upnextContentTitle"+upnextContentTitle);
-				upnextAssetType=upnextSinglePlaybackDetails.jsonPath().get("trailerDetails.asset_type").toString();
-				System.out.println("upnextAssetType"+upnextAssetType);
-				upnextAssetSubtype=upnextSinglePlaybackDetails.jsonPath().get("trailerDetails.asset_subtype");
-				System.out.println("upnextAssetSubtype"+upnextAssetSubtype);
-				upnextContentSpec=upnextAssetSubtype;
-				upnextGenre=upnextSinglePlaybackDetails.jsonPath().getList("trailerDetails.genres.id").toString().replace(",","-");
-				System.out.println("upnextGenre"+upnextGenre);
-				try {
-					upnextChannel=upnextSinglePlaybackDetails.jsonPath().getList("trailerDetails.channels.original_title").toString().replace(",","-");
-				}catch(Exception e) {}
-				System.out.println("upnextChannel"+upnextChannel);
-				try {
-					upnextSeries=upnextSinglePlaybackDetails.jsonPath().get("trailerDetails.tvshow_name").toString().replace(",","-");
-				}catch(Exception e) {
-					upnextSeries=upnextContentTitle;
+					upnextContentID = upnextSinglePlaybackDetails.jsonPath().get("trailerDetails.id").toString();
+				} catch (Exception e) {
+					trayDetails.add("");
+					return trayDetails;
 				}
-				System.out.println("upnextSeries"+upnextSeries);
+				System.out.println("upnextContentID" + upnextContentID);
+				upnextContentTitle = upnextSinglePlaybackDetails.jsonPath().get("trailerDetails.title").toString();
+				System.out.println("upnextContentTitle" + upnextContentTitle);
+				upnextAssetType = upnextSinglePlaybackDetails.jsonPath().get("trailerDetails.asset_type").toString();
+				System.out.println("upnextAssetType" + upnextAssetType);
+				upnextAssetSubtype = upnextSinglePlaybackDetails.jsonPath().get("trailerDetails.asset_subtype");
+				System.out.println("upnextAssetSubtype" + upnextAssetSubtype);
+				upnextContentSpec = upnextAssetSubtype;
+				upnextGenre = upnextSinglePlaybackDetails.jsonPath().getList("trailerDetails.genres.id").toString()
+						.replace(",", "-");
+				System.out.println("upnextGenre" + upnextGenre);
 				try {
-					upnextEpNo=upnextSinglePlaybackDetails.jsonPath().get("trailerDetails.orderid").toString();
-				}catch(Exception e) {}
-				System.out.println("upnextEpNo"+upnextEpNo);
-				if(upnextEpNo.equals("0")) upnextEpNo="N/A";
-				upnextHorizontalIndex="1";//First card is the upnext
-				System.out.println("upnextHorizontalIndex"+upnextHorizontalIndex);
-				try {
-					upnextContentBillingType=upnextSinglePlaybackDetails.jsonPath().get("trailerDetails.billing_type").toString();
-				}catch(Exception e) {upnextContentBillingType="N/A";}
-				if(upnextContentBillingType.equals("")) upnextContentBillingType="N/A";
-				System.out.println("upnextContentBillingType"+upnextContentBillingType);
-				
-				try {
-					upnextTvShowAssetSubtype=upnextSinglePlaybackDetails.jsonPath().get("showDetails.asset_subtype").toString();
-				}catch(Exception e) {
-					upnextTvShowAssetSubtype="";
+					upnextChannel = upnextSinglePlaybackDetails.jsonPath()
+							.getList("trailerDetails.channels.original_title").toString().replace(",", "-");
+				} catch (Exception e) {
 				}
-				System.out.println("upnextTvShowAssetSubtype"+upnextTvShowAssetSubtype);
-				
-			}			
-			if(evaluateTrailer==true || evaluateActualContent==true) {
+				System.out.println("upnextChannel" + upnextChannel);
+				try {
+					upnextSeries = upnextSinglePlaybackDetails.jsonPath().get("trailerDetails.tvshow_name").toString()
+							.replace(",", "-");
+				} catch (Exception e) {
+					upnextSeries = upnextContentTitle;
+				}
+				System.out.println("upnextSeries" + upnextSeries);
+				try {
+					upnextEpNo = upnextSinglePlaybackDetails.jsonPath().get("trailerDetails.orderid").toString();
+				} catch (Exception e) {
+				}
+				System.out.println("upnextEpNo" + upnextEpNo);
+				if (upnextEpNo.equals("0"))
+					upnextEpNo = "N/A";
+				upnextHorizontalIndex = "1";// First card is the upnext
+				System.out.println("upnextHorizontalIndex" + upnextHorizontalIndex);
+				try {
+					upnextContentBillingType = upnextSinglePlaybackDetails.jsonPath().get("trailerDetails.billing_type")
+							.toString();
+				} catch (Exception e) {
+					upnextContentBillingType = "N/A";
+				}
+				if (upnextContentBillingType.equals(""))
+					upnextContentBillingType = "N/A";
+				System.out.println("upnextContentBillingType" + upnextContentBillingType);
+
+				try {
+					upnextTvShowAssetSubtype = upnextSinglePlaybackDetails.jsonPath().get("showDetails.asset_subtype")
+							.toString();
+				} catch (Exception e) {
+					upnextTvShowAssetSubtype = "";
+				}
+				System.out.println("upnextTvShowAssetSubtype" + upnextTvShowAssetSubtype);
+
+			}
+			if (evaluateTrailer == true || evaluateActualContent == true) {
 				Mixpanel.FEProp.setProperty("Channel Name", upnextChannel);
 				Mixpanel.FEProp.setProperty("Series", upnextSeries);
-				if(upnextAssetSubtype.equals("episode")) {
+				if (upnextAssetSubtype.equals("episode")) {
 					Mixpanel.FEProp.setProperty("Episode No", upnextEpNo);
-				}
-				else {
+				} else {
 					Mixpanel.FEProp.setProperty("Episode No", "N/A");
 				}
 				Mixpanel.FEProp.setProperty("Image URL", upnextImageUrl);
 				Mixpanel.FEProp.setProperty("Content Specification", upnextContentSpec);
 				Mixpanel.FEProp.setProperty("Content Billing Type", upnextContentBillingType);
-				String  topCategory=topCategoryForPlayer(assetType,upnextAssetSubtype,upnextGenre,upnextTvShowAssetSubtype);
+				String topCategory = topCategoryForPlayer(assetType, upnextAssetSubtype, upnextGenre,
+						upnextTvShowAssetSubtype);
 				Mixpanel.FEProp.setProperty("Top Category", topCategory);
-				upnextSpecificValues=getPlayListSpecificValues(userType,contentIDSourceContent,upnextDataContentID,contLang,upnextTrayTitleUI,upnextSeasonID,guestToken);
-				upnextCarouselID=upnextSpecificValues.get(0).toString();
-				System.out.println("upnextCarouselID"+upnextCarouselID);
-				upnextCarouselName=upnextSpecificValues.get(1).toString();
-				System.out.println("upnextCarouselName"+upnextCarouselName);
-				upnextTalaClickID=upnextSpecificValues.get(2).toString();
-				System.out.println("upnextTalaClickID"+upnextTalaClickID);
-				upnextTalaModelName=upnextSpecificValues.get(3).toString();
-				System.out.println("upnextTalaModelName"+upnextTalaModelName);
-				upnextTalaOrigin=upnextSpecificValues.get(4).toString();
-				System.out.println("upnextTalaOrigin"+upnextTalaOrigin);
-				upnextIsTala=upnextSpecificValues.get(5).toString();
-				System.out.println("upnextIsTala"+upnextIsTala);
-				
+				upnextSpecificValues = getPlayListSpecificValues(userType, contentIDSourceContent, upnextDataContentID,
+						contLang, upnextTrayTitleUI, upnextSeasonID, guestToken);
+				upnextCarouselID = upnextSpecificValues.get(0).toString();
+				System.out.println("upnextCarouselID" + upnextCarouselID);
+				upnextCarouselName = upnextSpecificValues.get(1).toString();
+				System.out.println("upnextCarouselName" + upnextCarouselName);
+				upnextTalaClickID = upnextSpecificValues.get(2).toString();
+				System.out.println("upnextTalaClickID" + upnextTalaClickID);
+				upnextTalaModelName = upnextSpecificValues.get(3).toString();
+				System.out.println("upnextTalaModelName" + upnextTalaModelName);
+				upnextTalaOrigin = upnextSpecificValues.get(4).toString();
+				System.out.println("upnextTalaOrigin" + upnextTalaOrigin);
+				upnextIsTala = upnextSpecificValues.get(5).toString();
+				System.out.println("upnextIsTala" + upnextIsTala);
+
 				Mixpanel.FEProp.setProperty("Carousal Name", "Up Next (Player)");
 				Mixpanel.FEProp.setProperty("Carousal ID", "N/A");
-				//Mixpanel.FEProp.setProperty("Talamoos clickID", upnextTalaClickID);
+				// Mixpanel.FEProp.setProperty("Talamoos clickID", upnextTalaClickID);
 				Mixpanel.FEProp.setProperty("Talamoos modelName", upnextTalaModelName);
 				Mixpanel.FEProp.setProperty("Talamoos origin", upnextTalaOrigin);
 				Mixpanel.FEProp.setProperty("isTalamoos", upnextIsTala);
 				Mixpanel.FEProp.setProperty("isTalamoos", upnextIsTala);
 				Mixpanel.FEProp.setProperty("Horizontal Index", upnextHorizontalIndex);
-				
+
 				trayDetails.add(upnextContentID);
 				trayDetails.add(upnextContentTitle);
 				trayDetails.add(upnextTalaClickID);
 				trayDetails.add(upnextAssetSubtype);
-			}
-			else trayDetails.add("");
+			} else
+				trayDetails.add("");
+		} catch (Exception e) {
+			trayDetails.add("");
 		}
-		catch(Exception e) {trayDetails.add("");}	
 		return trayDetails;
 	}
-	
-	
-	public static Response getRecoDataForContent(String userType, String dataContentID, String contentLanguages,String guestToken) {
+
+	public static Response getRecoDataForContent(String userType, String dataContentID, String contentLanguages,
+			String guestToken) {
 		Response respReco = null;
-		String username="",password="",Uri="";
-		Response regionResponse = RestAssured.given().urlEncodingEnabled(false).when().get("https://xtra.zee5.com/country");
+		String username = "", password = "", Uri = "";
+		Response regionResponse = RestAssured.given().urlEncodingEnabled(false).when()
+				.get("https://xtra.zee5.com/country");
 		String region = regionResponse.getBody().jsonPath().getString("state_code");
-		
+
 		String xAccessToken = getXAccessToken();
 		if (userType.equalsIgnoreCase("Guest")) {
-			Uri="https://gwapi.zee5.com/content/reco?asset_id="+dataContentID+"&country=IN&translation=en&languages="+contentLanguages+"&version=9&region=KA";
-			respReco = RestAssured.given().headers("x-access-token", xAccessToken).header("x-z5-guest-token", guestToken).when().get(Uri);
-		} 		
+			Uri = "https://gwapi.zee5.com/content/reco?asset_id=" + dataContentID
+					+ "&country=IN&translation=en&languages=" + contentLanguages + "&version=9&region=KA";
+			respReco = RestAssured.given().headers("x-access-token", xAccessToken)
+					.header("x-z5-guest-token", guestToken).when().get(Uri);
+		}
 		if (!userType.equalsIgnoreCase("Guest")) {
 			if (userType.equals("NonSubscribedUser")) {
-				username = Reporter.getCurrentTestResult().getTestContext().getCurrentXmlTest().getParameter("NonsubscribedUserName");
-				password = Reporter.getCurrentTestResult().getTestContext().getCurrentXmlTest().getParameter("NonsubscribedPassword");
+				username = Reporter.getCurrentTestResult().getTestContext().getCurrentXmlTest()
+						.getParameter("NonsubscribedUserName");
+				password = Reporter.getCurrentTestResult().getTestContext().getCurrentXmlTest()
+						.getParameter("NonsubscribedPassword");
 			}
 			if (userType.equals("SubscribedUser")) {
-				username = Reporter.getCurrentTestResult().getTestContext().getCurrentXmlTest().getParameter("SubscribedUserName");
-				password = Reporter.getCurrentTestResult().getTestContext().getCurrentXmlTest().getParameter("SubscribedPassword");
+				username = Reporter.getCurrentTestResult().getTestContext().getCurrentXmlTest()
+						.getParameter("SubscribedUserName");
+				password = Reporter.getCurrentTestResult().getTestContext().getCurrentXmlTest()
+						.getParameter("SubscribedPassword");
 			}
 			Response userDetails = getUserSettingDetails(username, password);
 			int keyCount = userDetails.jsonPath().get("key.size()");
@@ -6636,180 +6935,243 @@ public class ResponseInstance {
 				}
 			}
 			String bearerToken = getBearerToken(username, password);
-			Uri="https://gwapi.zee5.com/content/reco?asset_id="+dataContentID+"&country=IN&translation=en&languages="+contentLanguages+"&version=9&region=KA";
-			respReco = RestAssured.given().headers("x-access-token", xAccessToken).header("authorization", bearerToken).when().get(Uri);
-		}	
+			Uri = "https://gwapi.zee5.com/content/reco?asset_id=" + dataContentID
+					+ "&country=IN&translation=en&languages=" + contentLanguages + "&version=9&region=KA";
+			respReco = RestAssured.given().headers("x-access-token", xAccessToken).header("authorization", bearerToken)
+					.when().get(Uri);
+		}
 		System.out.println(Uri);
-		//respReco.getBody().prettyPrint();
+		// respReco.getBody().prettyPrint();
 		return respReco;
 	}
-	
-	public static Response getUpNextContents(String season,String dataContentID) {
-		String upNextURL="https://gwapi.zee5.com/content/season/next_previous/"+season+"?episode_id="+dataContentID+"&type=next&limit=25&translation=en&country=IN&page=1";
-		System.out.println("upNextURL:"+upNextURL);
+
+	public static Response getUpNextContents(String season, String dataContentID) {
+		String upNextURL = "https://gwapi.zee5.com/content/season/next_previous/" + season + "?episode_id="
+				+ dataContentID + "&type=next&limit=25&translation=en&country=IN&page=1";
+		System.out.println("upNextURL:" + upNextURL);
 		Response upNextResponse = RestAssured.given().urlEncodingEnabled(false).when().get(upNextURL);
 		return upNextResponse;
 	}
-	
-	
-	public static ArrayList<String> getContentDetailsForPlayer(String userType,String contentID,String asset_subtype,String tvShowID,String channelID,String guestToken) {
-		ArrayList<String> returnList=new ArrayList<String>();
-		String publishDate="N/A",contentName="N/A",contentType="N/A",contentDuration="N/A",contentId="N/A";
-		String characters="N/A",subtitleLang="N/A",subtitles="N/A",contentOriLang="N/A",drm="N/A",audioLang="N/A",genre="N/A";	
-		String isEduauraa="N/A",isRental="N/A",imageUrl="N/A",playerHeadPosition="0";
-			
-		Response respContent = ResponseInstance.getSinglePlayBackDetails(contentID,tvShowID,channelID,guestToken);
-		
+
+	public static ArrayList<String> getContentDetailsForPlayer(String userType, String contentID, String asset_subtype,
+			String tvShowID, String channelID, String guestToken) {
+		ArrayList<String> returnList = new ArrayList<String>();
+		String publishDate = "N/A", contentName = "N/A", contentType = "N/A", contentDuration = "N/A",
+				contentId = "N/A";
+		String characters = "N/A", subtitleLang = "N/A", subtitles = "N/A", contentOriLang = "N/A", drm = "N/A",
+				audioLang = "N/A", genre = "N/A";
+		String isEduauraa = "N/A", isRental = "N/A", imageUrl = "N/A", playerHeadPosition = "0";
+
+		Response respContent = ResponseInstance.getSinglePlayBackDetails(contentID, tvShowID, channelID, guestToken);
+
 		try {
-			imageUrl=respContent.jsonPath().getString("assetDetails.image_url").replace(",", "-");
-			if(imageUrl.equals("null")) imageUrl="N/A";
-		}catch(Exception e) {imageUrl="N/A";}
+			imageUrl = respContent.jsonPath().getString("assetDetails.image_url").replace(",", "-");
+			if (imageUrl.equals("null"))
+				imageUrl = "N/A";
+		} catch (Exception e) {
+			imageUrl = "N/A";
+		}
 		Mixpanel.FEProp.setProperty("Image URL", imageUrl);
-		System.out.println("Image URL : "+imageUrl);
-		
+		System.out.println("Image URL : " + imageUrl);
+
 		try {
-			publishDate=respContent.jsonPath().getString("assetDetails.release_date").split("T")[0];
+			publishDate = respContent.jsonPath().getString("assetDetails.release_date").split("T")[0];
 			SimpleDateFormat requiredFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
-			//java.text.DateFormat actualFormat = new java.text.SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'");
+			// java.text.DateFormat actualFormat = new
+			// java.text.SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'");
 			java.text.DateFormat actualFormat = new java.text.SimpleDateFormat("yyyy-MM-dd");
 			actualFormat.setTimeZone(java.util.TimeZone.getTimeZone("GMT"));
 			java.util.Date pubDate = actualFormat.parse(publishDate);
-			publishDate=requiredFormat.format(pubDate).toString();
-			if(publishDate.equals("null")) publishDate="N/A";
-		}catch(Exception e) { publishDate="N/A";}
-		System.out.println("Publishing Date: "+publishDate);
+			publishDate = requiredFormat.format(pubDate).toString();
+			if (publishDate.equals("null"))
+				publishDate = "N/A";
+		} catch (Exception e) {
+			publishDate = "N/A";
+		}
+		System.out.println("Publishing Date: " + publishDate);
 		Mixpanel.FEProp.setProperty("Publishing Date", publishDate);
-		
+
 		try {
-			contentName=respContent.jsonPath().getString("assetDetails.original_title").replace(",", "-");
-			if(contentName.equals("null")) contentName="N/A";
-		}catch(Exception e) {contentName="N/A";}
+			contentName = respContent.jsonPath().getString("assetDetails.original_title").replace(",", "-");
+			if (contentName.equals("null"))
+				contentName = "N/A";
+		} catch (Exception e) {
+			contentName = "N/A";
+		}
 		Mixpanel.FEProp.setProperty("Content Name", contentName);
-		System.out.println("content name : "+contentName);
-		
+		System.out.println("content name : " + contentName);
+
 		try {
-			contentType=respContent.jsonPath().getString("assetDetails.business_type").toString();
-			if(contentType.equals("null")) contentType="N/A";
-		}catch(Exception e) {contentType="N/A";}
-		Mixpanel.FEProp.setProperty("Content Type",contentType);
-		System.out.println("content type : "+contentType);
-		
+			contentType = respContent.jsonPath().getString("assetDetails.business_type").toString();
+			if (contentType.equals("null"))
+				contentType = "N/A";
+		} catch (Exception e) {
+			contentType = "N/A";
+		}
+		Mixpanel.FEProp.setProperty("Content Type", contentType);
+		System.out.println("content type : " + contentType);
+
 		try {
-			contentDuration=respContent.jsonPath().getString("assetDetails.duration").toString();
-			if(contentDuration.equals("null")) contentDuration="N/A";
-		}catch(Exception e) {contentDuration="N/A";}
+			contentDuration = respContent.jsonPath().getString("assetDetails.duration").toString();
+			if (contentDuration.equals("null"))
+				contentDuration = "N/A";
+		} catch (Exception e) {
+			contentDuration = "N/A";
+		}
 		Mixpanel.FEProp.setProperty("Content Duration", contentDuration);
-		System.out.println("duration : "+contentDuration);
-		
+		System.out.println("duration : " + contentDuration);
+
 		try {
-			contentId=respContent.jsonPath().getString("assetDetails.id").toString();
-			if(contentId.equals("null")) contentId="N/A";
-		}catch(Exception e) {contentId="N/A";}
+			contentId = respContent.jsonPath().getString("assetDetails.id").toString();
+			if (contentId.equals("null"))
+				contentId = "N/A";
+		} catch (Exception e) {
+			contentId = "N/A";
+		}
 		Mixpanel.FEProp.setProperty("Content ID", contentId);
-		System.out.println("id : "+contentId);
-		
+		System.out.println("id : " + contentId);
+
 		try {
-			characters=respContent.jsonPath().getList("assetDetails.actors").toString().replaceAll(",","-").replaceAll("\\s", "");
-			if(characters.equals("null") || characters.equals("[]")) characters="N/A";
-		}catch(Exception e) {characters="N/A";}
-		Mixpanel.FEProp.setProperty("Characters",characters);
-		System.out.println("characters : "+characters);
-		
+			characters = respContent.jsonPath().getList("assetDetails.actors").toString().replaceAll(",", "-")
+					.replaceAll("\\s", "");
+			if (characters.equals("null") || characters.equals("[]"))
+				characters = "N/A";
+		} catch (Exception e) {
+			characters = "N/A";
+		}
+		Mixpanel.FEProp.setProperty("Characters", characters);
+		System.out.println("characters : " + characters);
+
 		try {
-			subtitleLang=respContent.jsonPath().getString("assetDetails.subtitle_languages").toString();
-			if(subtitleLang.equals("null") || subtitleLang.equals("[]")) subtitleLang="N/A";
-		}catch(Exception e) {subtitleLang="N/A";}
-		subtitleLang=subtitleLang.replace(",", "-");
+			subtitleLang = respContent.jsonPath().getString("assetDetails.subtitle_languages").toString();
+			if (subtitleLang.equals("null") || subtitleLang.equals("[]"))
+				subtitleLang = "N/A";
+		} catch (Exception e) {
+			subtitleLang = "N/A";
+		}
+		subtitleLang = subtitleLang.replace(",", "-");
 		Mixpanel.FEProp.setProperty("Subtitle Language", subtitleLang);
-		System.out.println("subtitle lang : "+subtitleLang);
-		if(subtitleLang.equals("N/A")) subtitles="false";
-		else subtitles="true";
+		System.out.println("subtitle lang : " + subtitleLang);
+		if (subtitleLang.equals("N/A"))
+			subtitles = "false";
+		else
+			subtitles = "true";
 		Mixpanel.FEProp.setProperty("Subtitles", subtitles);
-		
+
 		try {
-			genre=respContent.jsonPath().getList("assetDetails.genres.id").toString().replaceAll(",","-").replaceAll("\\s", "");
-			if(genre.equals("null") || genre.equals("[]")) genre="N/A";
-		}catch(Exception e) {genre="N/A";}
-		Mixpanel.FEProp.setProperty("Genre",genre);
-		System.out.println("genre : "+genre);
-		
+			genre = respContent.jsonPath().getList("assetDetails.genres.id").toString().replaceAll(",", "-")
+					.replaceAll("\\s", "");
+			if (genre.equals("null") || genre.equals("[]"))
+				genre = "N/A";
+		} catch (Exception e) {
+			genre = "N/A";
+		}
+		Mixpanel.FEProp.setProperty("Genre", genre);
+		System.out.println("genre : " + genre);
+
 		try {
-			//contentOriLang=respContent.jsonPath().getString("assetDetails.languages").replace("[", "").replace("]", "");
-			List contentOriLangs=respContent.jsonPath().getList("assetDetails.languages");
-			System.out.println("contentOriLangs: "+contentOriLangs);
-			contentOriLang=contentOriLangs.get(0).toString();
-			if(contentOriLang.equals("null") || contentOriLang.equals("[]")) contentOriLang="N/A";
-		}catch(Exception e) {contentOriLang="N/A";}
-		Mixpanel.FEProp.setProperty("Content Original Language",contentOriLang);
-		System.out.println("content ori lang: "+contentOriLang);
-		
+			// contentOriLang=respContent.jsonPath().getString("assetDetails.languages").replace("[",
+			// "").replace("]", "");
+			List contentOriLangs = respContent.jsonPath().getList("assetDetails.languages");
+			System.out.println("contentOriLangs: " + contentOriLangs);
+			contentOriLang = contentOriLangs.get(0).toString();
+			if (contentOriLang.equals("null") || contentOriLang.equals("[]"))
+				contentOriLang = "N/A";
+		} catch (Exception e) {
+			contentOriLang = "N/A";
+		}
+		Mixpanel.FEProp.setProperty("Content Original Language", contentOriLang);
+		System.out.println("content ori lang: " + contentOriLang);
+
 		try {
-			drm=respContent.jsonPath().getString("assetDetails.is_drm");
-			if(drm.equals("1")) drm="true";
-			else drm="false";
-		}catch(Exception e) {drm="N/A";}
-		Mixpanel.FEProp.setProperty("DRM Video",drm);
-		System.out.println("DRM Video: "+drm);
-		
+			drm = respContent.jsonPath().getString("assetDetails.is_drm");
+			if (drm.equals("1"))
+				drm = "true";
+			else
+				drm = "false";
+		} catch (Exception e) {
+			drm = "N/A";
+		}
+		Mixpanel.FEProp.setProperty("DRM Video", drm);
+		System.out.println("DRM Video: " + drm);
+
 		try {
-			//audioLang=respContent.jsonPath().getList("assetDetails.audio_languages").toString().replace("[", "").replace("]", "");
-			List audioLangs=respContent.jsonPath().getList("assetDetails.audio_languages");
-			System.out.println("audio langs: "+audioLangs);
-			audioLang=audioLangs.get(0).toString();
-		}catch(Exception e) {audioLang="N/A";}
+			// audioLang=respContent.jsonPath().getList("assetDetails.audio_languages").toString().replace("[",
+			// "").replace("]", "");
+			List audioLangs = respContent.jsonPath().getList("assetDetails.audio_languages");
+			System.out.println("audio langs: " + audioLangs);
+			audioLang = audioLangs.get(0).toString();
+		} catch (Exception e) {
+			audioLang = "N/A";
+		}
 		Mixpanel.FEProp.setProperty("Audio Language", audioLang);
-		System.out.println("Audio Language: "+audioLang);		
-		
+		System.out.println("Audio Language: " + audioLang);
+
 		try {
-			isEduauraa=respContent.jsonPath().getString("assetDetails.tags");
-			if(isEduauraa.contains("Eduauraa")) isEduauraa="true";
-			else isEduauraa="false";
-		}catch(Exception e) {isEduauraa="false";}
-		Mixpanel.FEProp.setProperty("isEduauraa",isEduauraa);
-		System.out.println("isEduauraa: "+isEduauraa);
-			
+			isEduauraa = respContent.jsonPath().getString("assetDetails.tags");
+			if (isEduauraa.contains("Eduauraa"))
+				isEduauraa = "true";
+			else
+				isEduauraa = "false";
+		} catch (Exception e) {
+			isEduauraa = "false";
+		}
+		Mixpanel.FEProp.setProperty("isEduauraa", isEduauraa);
+		System.out.println("isEduauraa: " + isEduauraa);
+
 		try {
-			isRental=respContent.jsonPath().getString("entitlement.isTVOD");
-			if(isRental.equals("1")) drm="true";
-			else isRental="false";
-		}catch(Exception e) {isRental="false";}
-		Mixpanel.FEProp.setProperty("isRental",isRental);
-		System.out.println("isRental: "+isRental);
-		
+			isRental = respContent.jsonPath().getString("entitlement.isTVOD");
+			if (isRental.equals("1"))
+				drm = "true";
+			else
+				isRental = "false";
+		} catch (Exception e) {
+			isRental = "false";
+		}
+		Mixpanel.FEProp.setProperty("isRental", isRental);
+		System.out.println("isRental: " + isRental);
+
 		try {
-			playerHeadPosition=respContent.jsonPath().get("watchHistoryDetails.played_duration").toString();
-		}catch(Exception e) {playerHeadPosition="0";}
-		System.out.println("Player Head Position: "+playerHeadPosition);
+			playerHeadPosition = respContent.jsonPath().get("watchHistoryDetails.played_duration").toString();
+		} catch (Exception e) {
+			playerHeadPosition = "0";
+		}
+		System.out.println("Player Head Position: " + playerHeadPosition);
 		returnList.add(playerHeadPosition);
-		
+
 		return returnList;
-		
+
 	}
-	
+
 	public static void deleteAddDevicesForTheUser() throws Exception {
 		System.out.println("Entered deleteAddDevicesForTheUser ...");
-		String userType = "", username = "", password = "", url="",authorizationToken="";
-		userType=Reporter.getCurrentTestResult().getTestContext().getCurrentXmlTest().getParameter("userType");
-		Response deletDeviceResponse=null;
+		String userType = "", username = "", password = "", url = "", authorizationToken = "";
+		userType = Reporter.getCurrentTestResult().getTestContext().getCurrentXmlTest().getParameter("userType");
+		Response deletDeviceResponse = null;
 		if (userType.equals("NonSubscribedUser")) {
-			username = Reporter.getCurrentTestResult().getTestContext().getCurrentXmlTest().getParameter("NonsubscribedUserName");
-			password = Reporter.getCurrentTestResult().getTestContext().getCurrentXmlTest().getParameter("NonsubscribedPassword");
+			username = Reporter.getCurrentTestResult().getTestContext().getCurrentXmlTest()
+					.getParameter("NonsubscribedUserName");
+			password = Reporter.getCurrentTestResult().getTestContext().getCurrentXmlTest()
+					.getParameter("NonsubscribedPassword");
 		}
 		if (userType.equals("SubscribedUser")) {
-			username = Reporter.getCurrentTestResult().getTestContext().getCurrentXmlTest().getParameter("SubscribedUserName");
-			password = Reporter.getCurrentTestResult().getTestContext().getCurrentXmlTest().getParameter("SubscribedPassword");
+			username = Reporter.getCurrentTestResult().getTestContext().getCurrentXmlTest()
+					.getParameter("SubscribedUserName");
+			password = Reporter.getCurrentTestResult().getTestContext().getCurrentXmlTest()
+					.getParameter("SubscribedPassword");
 		}
-		authorizationToken=getAuthorization(username, password);
+		authorizationToken = getAuthorization(username, password);
 		RequestSpecification deleteDevicesRequestSpecification = RestAssured.given();
-		deleteDevicesRequestSpecification.header("Authorization", "Bearer "+authorizationToken);			
-		deleteDevicesRequestSpecification.config(io.restassured.RestAssured.config().encoderConfig(io.restassured.config.EncoderConfig.encoderConfig()
-				.appendDefaultContentCharsetToContentTypeIfUndefined(false)));
-		url="https://subscriptionapi.zee5.com/v1/device";
+		deleteDevicesRequestSpecification.header("Authorization", "Bearer " + authorizationToken);
+		deleteDevicesRequestSpecification
+				.config(io.restassured.RestAssured.config().encoderConfig(io.restassured.config.EncoderConfig
+						.encoderConfig().appendDefaultContentCharsetToContentTypeIfUndefined(false)));
+		url = "https://subscriptionapi.zee5.com/v1/device";
 		deletDeviceResponse = deleteDevicesRequestSpecification.delete(url);
-		//System.out.println(deletDeviceResponse.getStatusCode());
-		//deletDeviceResponse.prettyPrint();		
+		// System.out.println(deletDeviceResponse.getStatusCode());
+		// deletDeviceResponse.prettyPrint();
 	}
-	
+
 	public static String getCarouselContentFromAPI3(String usertype, String tabName) {
 
 		String pContentLang = ResponseInstance.getContentLanguageForAppMixpanel(usertype);
@@ -6825,15 +7187,15 @@ public class ResponseInstance {
 			String carousalName = pageResp.jsonPath().get("buckets[0].title");
 			MixpanelAndroid.FEProp.setProperty("Carousal Name", carousalName);
 			String businessType = pageResp.jsonPath().get("buckets[0].items[" + i + "].business_type");
-			
-			boolean asset = pageResp.jsonPath().get("buckets[0].items[" + i + "].asset_subtype")!=null;
-			if(asset== false) {
+
+			boolean asset = pageResp.jsonPath().get("buckets[0].items[" + i + "].asset_subtype") != null;
+			if (asset == false) {
 				asset_subtype = "Invalid";
-			}else {
+			} else {
 				asset_subtype = pageResp.jsonPath().get("buckets[0].items[" + i + "].asset_subtype");
 
 			}
-			
+
 			contentName = pageResp.jsonPath().get("buckets[0].items[" + i + "].title");
 			System.out.println("asset_subtype: " + asset_subtype);
 			String contentID1 = null;
@@ -6859,13 +7221,13 @@ public class ResponseInstance {
 				}
 
 			} else if (tabName.equalsIgnoreCase("Music")) {
-					if (asset_subtype.equalsIgnoreCase("video")) {
-						var = asset_subtype;
-					} else {
-						var = "Invalid";
-					}
-				
-			}else {
+				if (asset_subtype.equalsIgnoreCase("video")) {
+					var = asset_subtype;
+				} else {
+					var = "Invalid";
+				}
+
+			} else {
 				var = asset_subtype;
 			}
 
@@ -6882,8 +7244,8 @@ public class ResponseInstance {
 //					ContentResp2 = getResponseDetails(ContentId2);
 //					setFEPropertyOfContentFromAPI2(ContentId2, ContentResp2, tabName);
 //				} else {
-					setFEPropertyOfContentFromAPI2(contentID1, ContentResp1, tabName);
-	//			}
+				setFEPropertyOfContentFromAPI2(contentID1, ContentResp1, tabName);
+				// }
 				flag = true;
 				break;
 			case "original":
@@ -6936,7 +7298,8 @@ public class ResponseInstance {
 		return contentName;
 	}
 
-	public static String getRailNameFromPage_ForThumbnailClickEvent(String pTabName, String pUserType, String eventName) {
+	public static String getRailNameFromPage_ForThumbnailClickEvent(String pTabName, String pUserType,
+			String eventName) {
 		String tabName = pTabName;
 		String assettype = "", pContentID = "", contentName = "", pTrayName = "", setContentType = "0";
 		String guestTrayName = "Top Free Movies";
@@ -6981,7 +7344,7 @@ public class ResponseInstance {
 					assettype = resp.jsonPath().get("buckets[" + i + "].items[0].asset_type").toString();
 				}
 				pTrayName = resp.jsonPath().get("buckets[" + i + "].title").toString();
-				
+
 				if (assettype.equals(setContentType)) {
 					pContentID = resp.jsonPath().get("buckets[" + i + "].items[0].id").toString();
 					contentName = resp.jsonPath().get("buckets[" + i + "].items[0].title").toString();
@@ -6993,15 +7356,15 @@ public class ResponseInstance {
 					break;
 				}
 			}
-			
+
 			Response contentResp = null;
-			int seasonCount= 0;
-			if(assetsubType.equalsIgnoreCase("original") && (!eventName.equalsIgnoreCase("Thumbnail Click"))){
+			int seasonCount = 0;
+			if (assetsubType.equalsIgnoreCase("original") && (!eventName.equalsIgnoreCase("Thumbnail Click"))) {
 				contentResp = getContentDetails(pContentID, "original");
 				seasonCount = contentResp.jsonPath().getList("seasons").size();
-				System.out.println("seasonCount: "+seasonCount);
+				System.out.println("seasonCount: " + seasonCount);
 			}
-			
+
 			if (pUserType.equalsIgnoreCase("guest") && tabName.equalsIgnoreCase("Web Series") && (seasonCount > 1)) {
 				pContentID = contentResp.jsonPath().get("seasons[0].episodes[0].id");
 			} else if (pUserType.equalsIgnoreCase("guest") && (seasonCount > 1)) {
@@ -7106,7 +7469,7 @@ public class ResponseInstance {
 		}
 		return pTrayName;
 	}
-	
+
 	public static void setSubscriptionDetails_NativeAndroid(String pUsername, String pPassword) {
 
 		String url = "https://subscriptionapi.zee5.com/v1/subscription?include_all=true";
@@ -7128,6 +7491,5 @@ public class ResponseInstance {
 		MixpanelAndroid.FEProp.setProperty("Active Plan Name", resp.jsonPath().getString(uri + "original_title"));
 		MixpanelAndroid.FEProp.setProperty("Subscription Status", resp.jsonPath().getString("[0].state"));
 	}
-	
-	
+
 }

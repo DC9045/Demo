@@ -7,52 +7,52 @@ import org.openqa.selenium.interactions.Actions;
 import org.testng.asserts.SoftAssert;
 import com.utility.LoggingUtils;
 import com.utility.Utilities;
-import com.zee5.PWAPages.AppCenterPage;
+
 
 public class DownloadAPPFromAPPCenter extends Utilities{
 	
 	static LoggingUtils logger = new LoggingUtils();
 	private SoftAssert softAssert = new SoftAssert();
 
-	public void AppCenter(String build,String buildVersion) throws Exception {
-		HeaderChildNode("App Center");
-		verifyElementPresentAndClick(AppCenterPage.objMicrosoft, "Microsoft");
-		type(AppCenterPage.objEmail, "ABC", "Email Field");
-		verifyElementPresentAndClick(AppCenterPage.objSignIn, "Next Icon");
-		waitTime(4000);
-		type(AppCenterPage.objPassword, "ABC", "Password Field");
-		verifyElementPresentAndClick(AppCenterPage.objSignIn, "Next Icon");
-		if (verifyElementPresent(AppCenterPage.objSignIn, "Next Icon")) {
-			verifyElementPresentAndClick(AppCenterPage.objSignIn, "Next Icon");
-		}
-		waitTime(4000);
-		if (verifyElementPresent(AppCenterPage.objMoreInformationRequiredPopUp, "More Information")) {
-			click(AppCenterPage.objCancelBtn, "Cancel");
-		}
-		waitTime(4000);
-		if (verifyElementPresent(AppCenterPage.objNoBtn, "No Icon")) {
-			click(AppCenterPage.objNoBtn, "No Icon");
-		}
-		
-		if(verifyElementPresent(AppCenterPage.objZee5AndroidHeader, "ZEE5 Android Header")) {
-			if(build.equals("latest")) {
-			click(AppCenterPage.objDownloadLatestReleaseBtn, "Dwonload button");
-			}else if(build.equals("BuildVersion")){
-				List<WebElement> version = findElements(AppCenterPage.objVersion);
-				List<WebElement> expend = findElements(AppCenterPage.objExpandMore);
-				int buildsVersion = version.size();
-				for (int i = 1; i < buildsVersion; i++) {
-					System.out.println(version.get(i).getText());
-					if(version.get(i).getText().contains(buildVersion)) {
-						expend.get(i).click();
-						verifyElementPresentAndClick(AppCenterPage.objDwonload,"Download button");
-						break;
-					}
-				}
-			}
-		}
-		waitTime(120000);
-	}
+//	public void AppCenter(String build,String buildVersion) throws Exception {
+//		HeaderChildNode("App Center");
+//		verifyElementPresentAndClick(AppCenterPage.objMicrosoft, "Microsoft");
+//		type(AppCenterPage.objEmail, "ABC", "Email Field");
+//		verifyElementPresentAndClick(AppCenterPage.objSignIn, "Next Icon");
+//		waitTime(4000);
+//		type(AppCenterPage.objPassword, "ABC", "Password Field");
+//		verifyElementPresentAndClick(AppCenterPage.objSignIn, "Next Icon");
+//		if (verifyElementPresent(AppCenterPage.objSignIn, "Next Icon")) {
+//			verifyElementPresentAndClick(AppCenterPage.objSignIn, "Next Icon");
+//		}
+//		waitTime(4000);
+//		if (verifyElementPresent(AppCenterPage.objMoreInformationRequiredPopUp, "More Information")) {
+//			click(AppCenterPage.objCancelBtn, "Cancel");
+//		}
+//		waitTime(4000);
+//		if (verifyElementPresent(AppCenterPage.objNoBtn, "No Icon")) {
+//			click(AppCenterPage.objNoBtn, "No Icon");
+//		}
+//		
+//		if(verifyElementPresent(AppCenterPage.objZee5AndroidHeader, "ZEE5 Android Header")) {
+//			if(build.equals("latest")) {
+//			click(AppCenterPage.objDownloadLatestReleaseBtn, "Dwonload button");
+//			}else if(build.equals("BuildVersion")){
+//				List<WebElement> version = findElements(AppCenterPage.objVersion);
+//				List<WebElement> expend = findElements(AppCenterPage.objExpandMore);
+//				int buildsVersion = version.size();
+//				for (int i = 1; i < buildsVersion; i++) {
+//					System.out.println(version.get(i).getText());
+//					if(version.get(i).getText().contains(buildVersion)) {
+//						expend.get(i).click();
+//						verifyElementPresentAndClick(AppCenterPage.objDwonload,"Download button");
+//						break;
+//					}
+//				}
+//			}
+//		}
+//		waitTime(120000);
+//	}
 	
 	public boolean verifyElementPresentAndClick(By byLocator, String validationtext) throws Exception {
 		try {
